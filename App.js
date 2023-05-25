@@ -10,6 +10,8 @@ import { DrawerContents } from './screens/DrawerContents';
 import PlannerScreen from './screens/PlannerScreen';
 import InsightScreen from './screens/InsightScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import SplashScreen from './screens/SplashScreen';
+import SignupScreen from './screens/SignupScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -29,7 +31,9 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
+        <Stack.Screen options={{ headerShown: false }} name="Splash" component={SplashScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Login" component={LoginScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="Signup" component={SignupScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Home" component={DrawerRoutes} />
         <Stack.Screen name="Drawer" component={DrawerContents}/>
       </Stack.Navigator>

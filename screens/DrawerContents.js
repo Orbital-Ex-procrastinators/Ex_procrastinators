@@ -23,7 +23,7 @@ export function DrawerContents(props) {
         auth
         .signOut()
         .then(() => {
-            navigation.navigate("Login")
+            navigation.navigate("Splash")
         })
         .catch(error => alert(error.message))
     }

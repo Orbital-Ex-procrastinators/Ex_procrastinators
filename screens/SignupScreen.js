@@ -1,5 +1,4 @@
 import { useNavigation } from "@react-navigation/core";
-import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
@@ -13,7 +12,7 @@ import {
 import { auth } from "../firebase";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const LoginScreen = () => {
+const SignupScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -29,16 +28,6 @@ const LoginScreen = () => {
         return unsubscribe
       }, [])
 
-    const handleLogin = () => {
-        auth
-          .signInWithEmailAndPassword(email, password)
-          .then(userCredentials => {
-            const user = userCredentials.user;
-            console.log('Logged in with:', user.email);
-          })
-          .catch(error => alert(error.message))
-    }
-
     const handleSignUp = () => {
         auth
           .createUserWithEmailAndPassword(email, password)
@@ -49,8 +38,6 @@ const LoginScreen = () => {
           .catch(error => alert(error.message))
     }
 
-
-    
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -58,7 +45,7 @@ const LoginScreen = () => {
     >
         <Image style={styles.image} source={require("../assets/TrackIT.png")} />
 
-            <View style={styles.inputContainer}>
+        <View style={styles.inputContainer}>
             <TextInput
                 // Get Email
                 placeholder="Email"
@@ -79,41 +66,32 @@ const LoginScreen = () => {
                 style={styles.input}
                 secureTextEntry
             />
-            </View>
+        </View>
 
         <View style={styles.buttonContainer}>
             <TouchableOpacity
-                //Login
-                onPress={handleLogin}
-                style={styles.login}
-            >
-                <Text style={styles.loginText} >Login</Text>
-            </TouchableOpacity>
-            <View flexDirection='row'>
-            <Text> Don't have an account? </Text>
-            <TouchableOpacity
                 //Sign-up
-                onPress={() => {navigation.replace("Signup")}}
+                onPress={handleSignUp}
+                style={[styles.login, styles.signup]}
             >
                 <Text style={styles.signupText} > Sign-up </Text>
             </TouchableOpacity>
-            </View>
-            {/* <TouchableOpacity
-                // Google 
-                onPress={signInWithGoggle}
-                style={styles.google}
+        </View>
+
+        <View flexDirection='row' alignItems='center'>
+            <Text> Already have an account? </Text>
+            <TouchableOpacity
+                //Sign-up
+                onPress={() => {navigation.replace("Login")}}
             >
-                <Icon 
-                    name="google" 
-                />
-                <Text> Sign in with Google</Text>
-            </TouchableOpacity> */}
+                <Text style={styles.signupText} > Login </Text>
+            </TouchableOpacity>
         </View>
     </KeyboardAvoidingView>
   )
 }
 
-export default LoginScreen;
+export default SignupScreen;
 
 const styles = StyleSheet.create({
     container: {
@@ -161,6 +139,11 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
 
+    signup: {
+        backgroundColor: 'white',
+        alignItems: 'center',
+    },
+
     loginText: {
         color: 'white',
         fontWeight: '700',
@@ -170,6 +153,7 @@ const styles = StyleSheet.create({
     signupText: {
         color: '#800080',
         fontWeight: '700',
+        fontSize: 16,
     },
 
     google: {
