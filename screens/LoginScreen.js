@@ -79,7 +79,7 @@ const LoginScreen = () => {
                 style={styles.input}
                 secureTextEntry
             />
-            </View>
+        </View>
 
         <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -89,7 +89,8 @@ const LoginScreen = () => {
             >
                 <Text style={styles.loginText} >Login</Text>
             </TouchableOpacity>
-            <View flexDirection='row'>
+        </View>    
+        <View flexDirection='row'>
             <Text> Don't have an account? </Text>
             <TouchableOpacity
                 //Sign-up
@@ -97,8 +98,8 @@ const LoginScreen = () => {
             >
                 <Text style={styles.signupText} > Sign-up </Text>
             </TouchableOpacity>
-            </View>
         </View>
+        
     </KeyboardAvoidingView>
   )
 }

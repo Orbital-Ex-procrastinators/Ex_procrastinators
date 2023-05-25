@@ -155,10 +155,4 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         fontSize: 16,
     },
-
-    google: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center', 
-    }
 });
