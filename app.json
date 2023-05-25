@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "TrackIT",
+    "slug": "TrackIT-app",
+    "description": "Welcome to TrackIT! Lets start studying...",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo2.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/TrackIT-splashscreen.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#800080"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
