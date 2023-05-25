@@ -5,7 +5,7 @@
     "description": "Welcome to TrackIT! Lets start studying...",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo2.png",
+    "icon": "./assets/TrackIT.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/TrackIT-splashscreen.png",

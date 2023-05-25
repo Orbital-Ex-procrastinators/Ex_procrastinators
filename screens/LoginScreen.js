@@ -56,7 +56,7 @@ const LoginScreen = () => {
       style={styles.container}
       behavior="padding"
     >
-        <Image style={styles.image} source={require("../assets/logo2.png")} />
+        <Image style={styles.image} source={require("../assets/TrackIT.png")} />
 
             <View style={styles.inputContainer}>
             <TextInput
