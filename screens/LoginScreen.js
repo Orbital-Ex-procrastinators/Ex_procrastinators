@@ -98,16 +98,6 @@ const LoginScreen = () => {
                 <Text style={styles.signupText} > Sign-up </Text>
             </TouchableOpacity>
             </View>
-            {/* <TouchableOpacity
-                // Google 
-                onPress={signInWithGoggle}
-                style={styles.google}
-            >
-                <Icon 
-                    name="google" 
-                />
-                <Text> Sign in with Google</Text>
-            </TouchableOpacity> */}
         </View>
     </KeyboardAvoidingView>
   )
@@ -171,10 +161,4 @@ const styles = StyleSheet.create({
         color: '#800080',
         fontWeight: '700',
     },
-
-    google: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center', 
-    }
 });
