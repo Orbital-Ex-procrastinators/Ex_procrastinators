@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { auth } from "../firebase";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
@@ -39,24 +40,20 @@ const LoginScreen = () => {
           .catch(error => alert(error.message))
     }
 
-    const handleSignUp = () => {
-        auth
-          .createUserWithEmailAndPassword(email, password)
-          .then(userCredentials => {
-            const user = userCredentials.user;
-            console.log('Sign-up with:', user.email);
-          })
-          .catch(error => alert(error.message))
-    }
-
-
-    
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior="padding"
-    >
-        <Image style={styles.image} source={require("../assets/TrackIT.png")} />
+    >   
+    <SafeAreaView style={styles.back} >
+        <Icon 
+            name="keyboard-backspace" 
+            size={40} color="#800080" 
+            onPress={() => {navigation.replace('Splash')}}/>
+    </SafeAreaView>
+        
+        <View style={styles.box}>
+            <Image style={styles.image} source={require("../assets/TrackIT.png")} />
 
             <View style={styles.inputContainer}>
             <TextInput
@@ -99,6 +96,8 @@ const LoginScreen = () => {
                 <Text style={styles.signupText} > Sign-up </Text>
             </TouchableOpacity>
         </View>
+        </View>
+        
         
     </KeyboardAvoidingView>
   )
@@ -110,6 +109,17 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
+        rowGap: 100
+    },
+
+    back: {
+        alignItems: 'flex-start',
+        top: 25,
+        left: 25,
+    }, 
+
+    box: {
+        flex: 1,
         alignItems: 'center',
     },
 
