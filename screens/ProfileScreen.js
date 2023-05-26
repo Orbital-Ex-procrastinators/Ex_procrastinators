@@ -10,8 +10,13 @@ import {
 import { Button } from 'react-native-paper';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import { auth } from '../firebase'
+import { useNavigation } from '@react-navigation/native';
+import LeaderBoard from './LeaderBoard';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ProfileScreen = () => {
+  const navigate = useNavigation();
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -34,18 +39,20 @@ const ProfileScreen = () => {
             </Text>
           </View>
         </View>
-        <Button style={styles.button} textColor='black' icon="star" mode= 'contained-tonal' onPress={() => console.log('Pressed')}>
-          LeaderBoard
-        </Button>
-        <Button style={styles.button} textColor='black' icon="calendar-text-outline" mode='contained-tonal' onPress={() => console.log('Pressed')}>
-          Calendar
-        </Button>
+        <TouchableOpacity style={styles.button} textColor='black' onPress={() => {navigate.navigate("LeaderBoard")}}>
+            <Icon name='star'size={20}/>
+            <Text> LeaderBoard </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} textColor='black' mode='contained-tonal' onPress={() => {navigate.navigate("Planner")}}>
+        <Icon name="calendar-text-outline" size={20}/>
+            <Text> Planner </Text>
+        </TouchableOpacity>
         </ScrollView>
     </View>
   );
 }
 
-export default ProfileScreen
+export default ProfileScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -103,9 +110,12 @@ const styles = StyleSheet.create({
 
   button: {
     width: "90%",
+    padding: 10,
     borderRadius: 10/2,
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: 10,
     backgroundColor: "white",
     marginTop: 20,
+    flexDirection: 'row',
   }
 })

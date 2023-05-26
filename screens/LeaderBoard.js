@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const PlannerScreen = () => {
+const LeaderBoard = () => {
   return (
     <View>
-      <Text>PlannerScreen</Text>
+      <Text>LeaderBoard</Text>
     </View>
   )
 }
 
-export default PlannerScreen;
+export default LeaderBoard;
 
 const styles = StyleSheet.create({})

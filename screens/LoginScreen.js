@@ -23,7 +23,7 @@ const LoginScreen = () => {
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
           if (user) {
-            navigation.replace("Home")
+            navigation.replace("Routes")
           }
         })
 
@@ -97,8 +97,6 @@ const LoginScreen = () => {
             </TouchableOpacity>
         </View>
         </View>
-        
-        
     </KeyboardAvoidingView>
   )
 }
