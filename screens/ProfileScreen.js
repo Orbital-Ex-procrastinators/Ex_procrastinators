@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   ScrollView,
@@ -7,15 +7,24 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { Button } from 'react-native-paper';
 import FeatherIcon from 'react-native-vector-icons/Feather';
-import { auth } from '../firebase'
+import { auth, db } from '../firebase'
 import { useNavigation } from '@react-navigation/native';
-import LeaderBoard from './LeaderBoard';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useEffect } from 'react';
+
 
 const ProfileScreen = () => {
   const navigate = useNavigation();
+  const [bio, setBio] = useState('');
+  const [username, setUsername] = useState('')
+
+  useEffect(() => {
+    db.collection('users').doc(auth.currentUser?.uid).get().then( doc => [
+      setBio(doc.data().bio),
+      setUsername(doc.data().username)
+    ])
+  })
 
   return (
     <View style={{ flex: 1 }}>
@@ -33,9 +42,9 @@ const ProfileScreen = () => {
               </TouchableOpacity>
             </View>
           <View style={styles.profileBody}>
-            <Text style={styles.profileName}>{auth.currentUser?.email}</Text>
+            <Text style={styles.profileName}>{username}</Text>
             <Text style={styles.profileAddress}>
-              status message
+              {bio}
             </Text>
           </View>
         </View>

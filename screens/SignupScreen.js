@@ -9,13 +9,15 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const SignupScreen = () => {
+    const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [bio, setBio] = useState('');
 
     const navigation = useNavigation()
 
@@ -34,9 +36,29 @@ const SignupScreen = () => {
           .createUserWithEmailAndPassword(email, password)
           .then(userCredentials => {
             const user = userCredentials.user;
+            return db.collection('users').doc(userCredentials.user.uid).set({
+                username: username,
+                bio: bio
+            })
             console.log('Sign-up with:', user.email);
           })
-          .catch(error => alert(error.message))
+          .catch(error => {
+            var errorCode = error.code
+            if (errorCode == "auth/invalid-email" || errorCode == "auth/missing-email") {
+                alert("The email address is invalid.")
+            }
+            else if (errorCode === "auth/email-already-in-use") { 
+                alert("The email address is already in use by another account.")
+            } 
+            else if (error.code == 'auth/missing-password') {
+                alert("The password should not be empty. Please enter a valid password.")
+            }
+            else if (error.code == 'auth/weak-password') {
+                alert("The password must be 6 characters long or more.")
+            }
+            else {
+                alert(error.message)
+            }})
     }
 
   return (
@@ -53,6 +75,16 @@ const SignupScreen = () => {
 
         <View style={styles.box}> 
             <Image style={styles.image} source={require("../assets/TrackIT.png")} />
+            <View style={styles.inputContainer}>
+                <TextInput
+                    //Get Password
+                    placeholder="Username"
+                    placeholderTextColor="#800080"
+                    value={username}
+                    onChangeText={text => setUsername(text)}
+                    style={styles.input}
+                />
+            </View>
             <View style={styles.inputContainer}>
                 <TextInput
                     // Get Email
@@ -76,6 +108,17 @@ const SignupScreen = () => {
                 />
             </View>
 
+            <View style={styles.inputContainer}>
+                <TextInput
+                    //Get Password
+                    placeholder="One Line Bio"
+                    placeholderTextColor="#800080"
+                    value={bio}
+                    onChangeText={text => setBio(text)}
+                    style={styles.input}
+                />
+            </View>
+
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     //Sign-up
@@ -95,7 +138,7 @@ const SignupScreen = () => {
                     <Text style={styles.signupText} > Login </Text>
                 </TouchableOpacity>
             </View>
-        </View>
+            </View>
     </KeyboardAvoidingView>
   )
 }
@@ -106,7 +149,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        rowGap: 100
+        rowGap: 5
     },
 
     back: {
@@ -123,10 +166,10 @@ const styles = StyleSheet.create({
 
     image: {
         marginBottom: 20,
-        width: 150,
-        height: 150,
+        width: 120,
+        height: 120,
         resizeMode: 'contain',
-        borderRadius: 100/2,
+        borderRadius: 30,
     }, 
 
     inputContainer: {

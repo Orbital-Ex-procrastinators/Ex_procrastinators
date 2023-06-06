@@ -23,12 +23,11 @@ function DrawerRoutes() {
     <Drawer.Navigator drawerContent={props => <DrawerContents {...props} />}>
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Profile" component={ProfileRoutes} />
-      {/* <Drawer.Screen name="Planner" component={PlannerScreen} /> */}
+      <Drawer.Screen name="Planner" component={PlannerScreen}/>
       <Drawer.Screen name="Insight" component={InsightScreen} />
     </Drawer.Navigator>
   )
 }
-
 function ProfileRoutes() {
   return ( 
   <Nested.Navigator>

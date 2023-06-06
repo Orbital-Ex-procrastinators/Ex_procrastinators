@@ -37,7 +37,27 @@ const LoginScreen = () => {
             const user = userCredentials.user;
             console.log('Logged in with:', user.email);
           })
-          .catch(error => alert(error.message))
+          .catch(error => { 
+            var errorCode = error.code
+            if (errorCode == "auth/invalid-email") {
+                alert("The email address is invalid.")
+            }
+            else if (errorCode === "auth/user-not-found") { 
+                alert("There is no user record corresponding to this email.")
+            } 
+            else if (error.code == 'auth/wrong-password') {
+                alert("The email or password is invalid. Please enter the correct email or password.")
+            }
+            else if (error.code == 'auth/missing-password') {
+                alert("The password should not be empty. Please enter a valid password.")
+            }
+            else if (error.code == 'auth/weak-password') {
+                alert("The password must be 6 characters long or more.")
+            }
+            else {
+                console.log(errorCode)
+                alert(error.message)
+            }})
     }
 
   return (
@@ -123,10 +143,10 @@ const styles = StyleSheet.create({
 
     image: {
         marginBottom: 20,
-        width: 150,
-        height: 150,
+        width: 120,
+        height: 120,
         resizeMode: 'contain',
-        borderRadius: 100/2,
+        borderRadius: 30,
     }, 
 
     inputContainer: {
