@@ -26,7 +26,25 @@ const ProfileScreen = () => {
     ])
   })
 
-  return (
+  const handledeleteUser = () => {
+    // delete collection
+    db.collection('users').doc(auth.currentUser?.uid).delete().then(() => {
+      console.log('Successfully deleted doc');
+    }).catch((error) => {
+      console.log('Error deleting user:', error);
+    });
+
+    // delete user
+    auth.currentUser.delete().then(() => {
+      console.log('Successfully deleted user');
+      navigate.navigate('Splash')
+    }).catch((error) => {
+      console.log('Error deleting user:', error);
+    });
+
+  }
+
+   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.profile}>
@@ -56,6 +74,17 @@ const ProfileScreen = () => {
         <Icon name="calendar-text-outline" size={20}/>
             <Text> Planner </Text>
         </TouchableOpacity>
+
+        <View style={styles.buttonContainer}>
+            <TouchableOpacity
+                //Login
+                onPress={handledeleteUser}
+                style={styles.delete}
+            >
+                <Text style={styles.deleteText} >Delete Account</Text>
+            </TouchableOpacity>
+        </View>    
+
         </ScrollView>
     </View>
   );
@@ -126,5 +155,27 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     marginTop: 20,
     flexDirection: 'row',
-  }
+  },
+
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+
+  delete: {
+    width: '90%',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    backgroundColor: "#800080",
+    marginBottom: 20,
+  },
+
+  deleteText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 16,
+  }, 
 })

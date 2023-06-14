@@ -46,6 +46,7 @@ export default function App() {
         <Stack.Screen options={{ headerShown: false }} name="Login" component={LoginScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Signup" component={SignupScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Routes" component={DrawerRoutes} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Drawer" component={DrawerContents}/>
       </Stack.Navigator>
     </NavigationContainer>

@@ -23,15 +23,6 @@ const HomeScreen = () => {
     ])
   })
 
-  // const addTask = (task) => {
-  //   if (task == null) return;
-  //   setTasks([...tasks, task]);
-  // }
-
-  // const deleteTask = (deleteIndex) => {
-  //   setTasks(tasks.filter((value, index) => index != deleteIndex));
-  // }
-
     return ( 
       <ScrollView style={styles.container}>
 
