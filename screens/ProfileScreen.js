@@ -44,6 +44,11 @@ const ProfileScreen = () => {
 
   }
 
+  const DummyButton = () => {
+    // Handle Dummy button press action
+  };
+
+
    return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -85,6 +90,11 @@ const ProfileScreen = () => {
             </TouchableOpacity>
         </View>    
 
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity onPress={DummyButton} style={styles.extraButton}>
+            <Text style={styles.extraButtonText}>Extra Button</Text>
+          </TouchableOpacity>
+        </View>
         </ScrollView>
     </View>
   );
@@ -178,4 +188,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
   }, 
+
+  extraButton: {
+    width: '90%',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    backgroundColor: "#800080",
+    marginBottom: 20,
+  },
+  
+  extraButtonText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 16,
+  },
+
 })
