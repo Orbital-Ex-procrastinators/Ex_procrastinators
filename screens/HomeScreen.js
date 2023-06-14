@@ -60,6 +60,7 @@ const HomeScreen = () => {
           value={time}
           onValueChange={value => setTime(value)}
         />
+        <Text>{time}</Text>
         <TouchableOpacity
             onPress={() => {
               setStart(!start)
