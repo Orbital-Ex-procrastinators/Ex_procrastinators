@@ -10,13 +10,14 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const LoginScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [currentDate, setCurrentDate] = useState('');
 
     const navigation = useNavigation()
 

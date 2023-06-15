@@ -7,30 +7,65 @@ import { auth, db} from '../firebase'
 import { Icon, Slider} from 'react-native-elements'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Avatar, Card } from 'react-native-paper'
+import { getTimestamp } from 'react-native-reanimated/lib/reanimated2/core'
 
 const HomeScreen = () => {
-  const [time, setTime] = useState(0)
-  const [start, setStart] = useState(false)
-  const [text, setText] = useState('Start')
-  const [username, setUsername] = useState('')
-  const[tasks, setTasks] = useState([])
-
+  const [time, setTime] = useState(0);
+  const [start, setStart] = useState(false);
+  const [text, setText] = useState('Start');
+  const [username, setUsername] = useState('');
+  const [totalTime, setTotalTime]  = useState(0);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    db.collection('users').doc(auth.currentUser?.uid).get().then( doc => [
-      setUsername(doc.data().username)
-    ])
+  // create subcollection 
+  var date = new Date().getDate(); //Current Date
+  var month = new Date().getMonth() + 1; //Current Month
+  var year = new Date().getFullYear(); //Current Year
+  const currentDate = year + '-' + month + '-' + date;
+  const doc = db.collection('users').doc(auth.currentUser?.uid)
+  doc.collection("Dates").doc(currentDate).get().then(doc => {
+    if (doc.exists) {
+      //setTotalTime
+      setTotalTime(doc.data().time)
+    } else {
+      doc.set({
+        time : 0 
+      })
+    }
   })
 
-    return ( 
-      <ScrollView style={styles.container}>
+  useEffect(() => {
+    doc.get().then(doc => [
+      setUsername(doc.data().username)
+    ]);
+  })
 
+  const currentTotal = () => {
+    if (time == 0) {
+      return totalTime + 7200
+    } else {
+      return totalTime + time - 900
+    }
+  }
+
+  const updateTime = () => {
+    setTotalTime(currentTotal())
+    doc.collection("Dates").doc(currentDate).update({
+      time: currentTotal()
+    })
+  }
+
+  return ( 
+      <ScrollView style={styles.container}>
         <Text style={styles.title}>Welcome Back, {username}!</Text>
         <Text style={styles.subtitle}>Let's Start Tracking...</Text>
         <Text style={styles.header}>Study Timer</Text>
 
         <View style={styles.countdown}>
+        <Text style={styles.text}>You have studied 
+          {'\n'}for {totalTime % 3600} mins {totalTime % 60} secs today!
+        </Text>
+        <Text>Click time to add 15 mins...</Text>
         <CountDown
           running={start}
           size={40}
@@ -42,35 +77,33 @@ const HomeScreen = () => {
           separatorStyle={{color: '#800080'}}
           timeLabels={{h:'', m: '', s: ''}}
           onFinish={() => {
-            // store time into firebase
             setStart(false)
             setText('Start')
             alert('Your Timer is Finished! Time to take a break!')
-          }
+            updateTime();
+            setTime(0);
+          }}
+          onPress = {() => {
+            if (!start) {
+              if (time >= 7200) {
+                setTime(0)
+              } else {
+                setTime(time + 900)}
+              }
+            }
           }
         />
-        <Slider
-          style={{width: 200, height: 40}}
-          thumbStyle={{ height: 10, width: 10, backgroundColor: 'purple'}}
-          minimumValue={0}
-          maximumValue={100}
-          step={1}
-          minimumTrackTintColor="#800080"
-          maximumTrackTintColor="white"
-          value={time}
-          onValueChange={value => setTime(value)}
-        />
-        <Text>{time}</Text>
+
         <TouchableOpacity
             onPress={() => {
               setStart(!start)
               if (start) {
-                setText('Start')
+                setText('Start');
+                setTime(0);
               } else {
-                setText('Stop')
+                setText('Give Up');
               }
-            }
-            }
+            }}
             style={styles.start}
         > 
           <Text style={styles.startText}>{text}</Text>
@@ -147,6 +180,12 @@ const HomeScreen = () => {
       width: '90%'
     },
 
+    text: {
+      textAlign: 'center',
+      marginTop: 10,
+      marginBottom: 50,
+    },
+
     header: {
       paddingLeft: 25,
       alignSelf:"flex-start",
@@ -167,16 +206,18 @@ const HomeScreen = () => {
     },
 
     start: {
-      width: '30%',
-      padding: 15,
-      borderRadius: 20,
+      width: '40%',
+      padding: 10,
       alignItems: 'center',
       marginTop: 10,
+      marginBottom: 30,
+      backgroundColor: '#800080',
+      borderRadius: 5
     },
 
     startText: {
-      color: '#800080',
-      fontWeight: '700',
+      color: 'white',
+      fontWeight: '500',
       fontSize: 16,
     }, 
 
@@ -192,6 +233,6 @@ const HomeScreen = () => {
 
     addText: {
       color:'black',
-      borderRadius: '12'
+      borderRadius: 12
     }
   })

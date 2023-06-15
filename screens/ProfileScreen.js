@@ -20,7 +20,7 @@ const ProfileScreen = () => {
   const [username, setUsername] = useState('')
 
   useEffect(() => {
-    db.collection('users').doc(auth.currentUser?.uid).get().then( doc => [
+    db.collection('users').doc(auth.currentUser?.uid).get().then(doc => [
       setBio(doc.data().bio),
       setUsername(doc.data().username)
     ])
@@ -44,11 +44,6 @@ const ProfileScreen = () => {
 
   }
 
-  const DummyButton = () => {
-    // Handle Dummy button press action
-  };
-
-
    return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -71,10 +66,12 @@ const ProfileScreen = () => {
             </Text>
           </View>
         </View>
+        
         <TouchableOpacity style={styles.button} textColor='black' onPress={() => {navigate.navigate("LeaderBoard")}}>
             <Icon name='star'size={20}/>
             <Text> LeaderBoard </Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.button} textColor='black' mode='contained-tonal' onPress={() => {navigate.navigate("Planner")}}>
         <Icon name="calendar-text-outline" size={20}/>
             <Text> Planner </Text>
@@ -88,13 +85,8 @@ const ProfileScreen = () => {
             >
                 <Text style={styles.deleteText} >Delete Account</Text>
             </TouchableOpacity>
-        </View>    
+        </View>  
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={DummyButton} style={styles.extraButton}>
-            <Text style={styles.extraButtonText}>Extra Button</Text>
-          </TouchableOpacity>
-        </View>
         </ScrollView>
     </View>
   );
