@@ -23,16 +23,18 @@ const HomeScreen = () => {
   var year = new Date().getFullYear(); //Current Year
   const currentDate = year + '-' + month + '-' + date;
   const doc = db.collection('users').doc(auth.currentUser?.uid)
-  doc.collection("Dates").doc(currentDate).get().then(doc => {
-    if (doc.exists) {
+  const datesDoc = doc.collection("Dates").doc(currentDate)
+
+  datesDoc.get().then((docSnapShot) => {
+    if (docSnapShot.exists) {
       //setTotalTime
-      setTotalTime(doc.data().time)
+      setTotalTime(docSnapShot.data().time)
     } else {
-      doc.set({
-        time : 0 
+      doc.collection("Dates").doc(currentDate).set({
+        time : 0
       })
     }
-  })
+  }).catch(error => alert(error))
 
   useEffect(() => {
     doc.get().then(doc => [
@@ -50,7 +52,7 @@ const HomeScreen = () => {
 
   const updateTime = () => {
     setTotalTime(currentTotal())
-    doc.collection("Dates").doc(currentDate).update({
+    datesDoc.update({
       time: currentTotal()
     })
   }
@@ -63,7 +65,7 @@ const HomeScreen = () => {
 
         <View style={styles.countdown}>
         <Text style={styles.text}>You have studied 
-          {'\n'}for {totalTime % 3600} mins {totalTime % 60} secs today!
+          {'\n'}for {Math.floor(totalTime/3600)} hrs {(totalTime - Math.floor(totalTime/3600) * 3600)/60} mins today!
         </Text>
         <Text>Click time to add 15 mins...</Text>
         <CountDown
@@ -96,7 +98,12 @@ const HomeScreen = () => {
 
         <TouchableOpacity
             onPress={() => {
-              setStart(!start)
+              if (time == 900) {
+                alert("Set Time to Start Studying")
+              } else {
+                setStart(!start)
+              }
+
               if (start) {
                 setText('Start');
                 setTime(0);
