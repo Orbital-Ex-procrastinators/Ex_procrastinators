@@ -2,15 +2,14 @@ import { useNavigation } from '@react-navigation/core'
 import React, { useEffect, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import CountDown from 'react-native-countdown-component'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { auth, db} from '../firebase'
-import { Icon, Slider} from 'react-native-elements'
+import { Icon } from 'react-native-elements'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Avatar, Card } from 'react-native-paper'
-import { getTimestamp } from 'react-native-reanimated/lib/reanimated2/core'
 
 const HomeScreen = () => {
   const [time, setTime] = useState(0);
+  const [countDownId, setCountDownId] = useState(undefined);
   const [start, setStart] = useState(false);
   const [text, setText] = useState('Start');
   const [username, setUsername] = useState('');
@@ -40,15 +39,14 @@ const HomeScreen = () => {
     doc.get().then(doc => [
       setUsername(doc.data().username)
     ]);
-  })
 
-  const currentTotal = () => {
-    if (time == 0) {
-      return totalTime + 7200
-    } else {
-      return totalTime + time - 900
-    }
-  }
+    // Generate new id based on unix timestamp (string)
+    const id = new Date().getTime().toString()
+    // Set id to state
+    setCountDownId(id)
+  }, [time])
+
+  const currentTotal = () => { totalTime + time } ; 
 
   const updateTime = () => {
     setTotalTime(currentTotal())
@@ -69,6 +67,7 @@ const HomeScreen = () => {
         </Text>
         <Text>Click time to add 15 mins...</Text>
         <CountDown
+          id={countDownId}
           running={start}
           size={40}
           until={time}
@@ -83,14 +82,14 @@ const HomeScreen = () => {
             setText('Start')
             alert('Your Timer is Finished! Time to take a break!')
             updateTime();
-            setTime(0);
+            setTime(prevtime => prevtime * 0);
           }}
           onPress = {() => {
             if (!start) {
               if (time >= 7200) {
-                setTime(0)
+                setTime(prevtime => prevtime * 0)
               } else {
-                setTime(time + 900)}
+                setTime(prevtime => prevtime + 900)}
               }
             }
           }
@@ -98,17 +97,17 @@ const HomeScreen = () => {
 
         <TouchableOpacity
             onPress={() => {
-              if (time == 900) {
+              if (time == 0) {
+                setText('Start')
                 alert("Set Time to Start Studying")
               } else {
                 setStart(!start)
-              }
-
-              if (start) {
-                setText('Start');
-                setTime(0);
-              } else {
-                setText('Give Up');
+                if (start) {
+                  setText('Start');
+                  setTime(prevtime => prevtime * 0);
+                } else {
+                  setText('Give Up');
+                }
               }
             }}
             style={styles.start}

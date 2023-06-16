@@ -62,7 +62,7 @@ const LoginScreen = () => {
     }
 
   return (
-    <KeyboardAvoidingView
+    <View
       style={styles.container}
       behavior="padding"
     >   
@@ -118,7 +118,7 @@ const LoginScreen = () => {
             </TouchableOpacity>
         </View>
         </View>
-    </KeyboardAvoidingView>
+    </View>
   )
 }
 
