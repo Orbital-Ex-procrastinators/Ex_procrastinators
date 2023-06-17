@@ -1,11 +1,13 @@
 import { useNavigation } from '@react-navigation/core'
-import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import CountDown from 'react-native-countdown-component'
 import { auth, db} from '../firebase'
 import { Icon } from 'react-native-elements'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Avatar, Card } from 'react-native-paper'
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
+import { Alert } from 'react-native'
 
 const HomeScreen = () => {
   const [time, setTime] = useState(0);
@@ -14,6 +16,9 @@ const HomeScreen = () => {
   const [text, setText] = useState('Start');
   const [username, setUsername] = useState('');
   const [totalTime, setTotalTime]  = useState(0);
+  const appState = useRef(AppState.currentState);
+  // const [appStateVisible, setAppStateVisible] = useState(appState.current);
+
   const navigation = useNavigation();
 
   // create subcollection 
@@ -46,8 +51,39 @@ const HomeScreen = () => {
     setCountDownId(id)
   }, [time])
 
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+
+      if (appState.current == 'inactive') {
+        // Stop Timer
+        setStart(false);
+        setText('Start')
+        console.log('AppState', appState.current);
+      }
+      console.log('AppState', appState.current);
+      appState.current = nextAppState;
+      // setAppStateVisible(appState.current);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  const enableKeepAwake = async () => {
+    await activateKeepAwakeAsync();
+  }
+
   const currentTotal = () => { totalTime + time } ; 
 
+  const resetCountDown = () => {
+    setText('Start')
+    setStart(false);
+    setTime(prevtime => prevtime * 0)
+    deactivateKeepAwake();
+  }
+
+  
   const updateTime = () => {
     setTotalTime(currentTotal())
     datesDoc.update({
@@ -78,11 +114,9 @@ const HomeScreen = () => {
           separatorStyle={{color: '#800080'}}
           timeLabels={{h:'', m: '', s: ''}}
           onFinish={() => {
-            setStart(false)
-            setText('Start')
-            alert('Your Timer is Finished! Time to take a break!')
             updateTime();
-            setTime(prevtime => prevtime * 0);
+            resetCountDown();
+            alert('Your Timer is Finished! Time to take a break!')
           }}
           onPress = {() => {
             if (!start) {
@@ -98,14 +132,16 @@ const HomeScreen = () => {
         <TouchableOpacity
             onPress={() => {
               if (time == 0) {
-                setText('Start')
                 alert("Set Time to Start Studying")
               } else {
-                setStart(!start)
                 if (start) {
-                  setText('Start');
-                  setTime(prevtime => prevtime * 0);
+                  Alert.alert("Warning!", "Are you sure you want to Give Up ?", [
+                    {text: 'Cancel', onPress: () => {}},
+                    {text: 'Confirm ', onPress: () => resetCountDown()}
+                  ])
                 } else {
+                  setStart(true)
+                  enableKeepAwake();
                   setText('Give Up');
                 }
               }
