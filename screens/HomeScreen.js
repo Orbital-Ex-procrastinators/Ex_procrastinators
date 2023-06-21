@@ -154,21 +154,29 @@ const HomeScreen = () => {
 
       <Text style={styles.header}>Today's To-Do List</Text>
 
-        <ScrollView style={styles.todo}>
-        <Card>
-          <Card.Content>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text>HomeWork</Text>
-              <Avatar.Text label="J" />
-            </View>
-          </Card.Content>
-        </Card>
-        </ScrollView> 
+      <ScrollView style={styles.todo}>
+      {tasks.filter((task) => !task.checked).length === 0 ? ( // Check if there are any unchecked tasks
+          <Text style={styles.noTasksText}>No tasks today!</Text>
+        ) : (
+          tasks
+            .filter((task) => !task.checked) // Filter out the checked tasks
+            .map((task, index) => (
+              <Card key={task.id} style={index !== 0 && styles.taskGap}>
+                <Card.Content>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Text>{task.text}</Text>
+          </View>
+        </Card.Content>
+      </Card>
+    ))
+  )}
+  </ScrollView>
 
         <TouchableOpacity 
           style={styles.addbutton}
@@ -276,5 +284,18 @@ const HomeScreen = () => {
     addText: {
       color:'black',
       borderRadius: 12
+    },
+
+    date: {
+      paddingLeft: 25,
+      alignSelf: "flex-start",
+      color: 'black',
+      fontWeight: '500',
+      fontSize: 20,
+      marginBottom: 10,
+    },
+
+    taskGap: {
+      marginTop: 10,
     }
   })

@@ -13,6 +13,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import SplashScreen from './screens/SplashScreen';
 import SignupScreen from './screens/SignupScreen';
 import LeaderBoard from './screens/LeaderBoard';
+import TodoListScreen from './screens/ToDoListScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -25,6 +26,7 @@ function DrawerRoutes() {
       <Drawer.Screen name="Profile" component={ProfileRoutes} />
       <Drawer.Screen name="Planner" component={PlannerScreen}/>
       <Drawer.Screen name="Insight" component={InsightScreen} />
+      <Drawer.Screen name="Todolist" component={TodoListScreen} />
     </Drawer.Navigator>
   )
 }
