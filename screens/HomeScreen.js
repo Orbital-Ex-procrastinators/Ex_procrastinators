@@ -70,6 +70,21 @@ const HomeScreen = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = db
+      .collection('users')
+      .doc(auth.currentUser?.uid)
+      .collection('Tasks')
+      .onSnapshot((snapshot) => {
+        const tasksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTasks(tasksData);
+      });
+      return () => unsubscribe();
+  }, []);
+  
   const enableKeepAwake = async () => {
     await activateKeepAwakeAsync();
   }

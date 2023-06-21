@@ -65,6 +65,18 @@ export function DrawerContents(props) {
                 label="Insights"
                 onPress={() => {props.navigation.navigate('Insight')}}
             />
+
+             <DrawerItem 
+                icon={({color, size}) => (
+                    <Icon 
+                    name="list" 
+                    color={color}
+                    size={size}
+                    />
+                )}
+                label="To do list"
+                onPress={() => {props.navigation.navigate('Todolist')}}
+            />
             </Drawer.Section>
             </DrawerContentScrollView> 
             <Drawer.Section style={styles.bottomDrawerSection}>
