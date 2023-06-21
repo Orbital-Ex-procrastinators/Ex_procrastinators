@@ -23,6 +23,25 @@ import { Alert } from 'react-native'
   
     const navigation = useNavigation();
 
+    const enableKeepAwake = async () => {
+      await activateKeepAwakeAsync();
+    }
+
+    const resetCountDown = () => {
+      setText('Start')
+      setStart(false);
+      setTime(prevtime => prevtime * 0)
+      deactivateKeepAwake();
+    }
+    
+    const updateTime = () => {
+      setTotalTime(currentTotal())
+      datesDoc.update({
+        time: currentTotal()
+      })
+    }
+  
+
   useEffect(() => {
     db.collection('users').doc(auth.currentUser?.uid).get().then(doc => [
       setUsername(doc.data().username)

@@ -7,6 +7,7 @@
     "orientation": "portrait",
     "icon": "./assets/TrackIT.png",
     "userInterfaceStyle": "light",
+    "owner": "ex-procrastinatiors",
     "splash": {
       "image": "./assets/TrackIT-splashscreen.png",
       "resizeMode": "cover",
