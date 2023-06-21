@@ -18,8 +18,11 @@ const SignupScreen = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [bio, setBio] = useState('');
-
     const navigation = useNavigation()
+    var date = new Date().getDate(); //Current Date
+    var month = new Date().getMonth() + 1; //Current Month
+    var year = new Date().getFullYear(); //Current Year
+    const currentDate = year + '-' + month + '-' + date;
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -27,7 +30,6 @@ const SignupScreen = () => {
             navigation.replace("Routes")
           }
         })
-
         return unsubscribe
       }, [])
 
@@ -40,7 +42,6 @@ const SignupScreen = () => {
                 username: username,
                 bio: bio
             })
-            console.log('Sign-up with:', user.email);
           })
           .catch(error => {
             var errorCode = error.code
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        rowGap: 5
+        rowGap: 10
     },
 
     back: {

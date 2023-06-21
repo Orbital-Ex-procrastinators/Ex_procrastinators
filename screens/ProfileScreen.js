@@ -42,14 +42,10 @@ const ProfileScreen = () => {
       console.log('Error deleting user:', error);
     });
 
-  }
-
-  const DummyButton = () => {
-    // Handle Dummy button press action
   };
 
 
-   return (
+  return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.profile}>
@@ -71,10 +67,12 @@ const ProfileScreen = () => {
             </Text>
           </View>
         </View>
+        
         <TouchableOpacity style={styles.button} textColor='black' onPress={() => {navigate.navigate("LeaderBoard")}}>
             <Icon name='star'size={20}/>
             <Text> LeaderBoard </Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.button} textColor='black' mode='contained-tonal' onPress={() => {navigate.navigate("Planner")}}>
         <Icon name="calendar-text-outline" size={20}/>
             <Text> Planner </Text>
@@ -88,13 +86,8 @@ const ProfileScreen = () => {
             >
                 <Text style={styles.deleteText} >Delete Account</Text>
             </TouchableOpacity>
-        </View>    
+        </View>  
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity onPress={DummyButton} style={styles.extraButton}>
-            <Text style={styles.extraButtonText}>Extra Button</Text>
-          </TouchableOpacity>
-        </View>
         </ScrollView>
     </View>
   );
@@ -188,20 +181,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
   }, 
-
-  extraButton: {
-    width: '90%',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    backgroundColor: "#800080",
-    marginBottom: 20,
-  },
-  
-  extraButtonText: {
-    color: 'white',
-    fontWeight: '500',
-    fontSize: 16,
-  },
 
 })

@@ -1,75 +1,105 @@
 import { useNavigation } from '@react-navigation/core'
-import React, { useEffect, useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import CountDown from 'react-native-countdown-component'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { auth, db} from '../firebase'
-import { Icon, Slider} from 'react-native-elements'
+import { Icon } from 'react-native-elements'
 import { ScrollView } from 'react-native-gesture-handler'
 import { Avatar, Card } from 'react-native-paper'
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
+import { Alert } from 'react-native'
 
-const HomeScreen = () => {
-  const [time, setTime] = useState(0)
-  const [start, setStart] = useState(false)
-  const [text, setText] = useState('Start')
-  const [username, setUsername] = useState('')
-  const[tasks, setTasks] = useState([])
-
-  const navigation = useNavigation();
+  const HomeScreen = () => {
+    const [time, setTime] = useState(0);
+    const [countDownId, setCountDownId] = useState(undefined);
+    const [start, setStart] = useState(false);
+    const [text, setText] = useState('Start');
+    const [username, setUsername] = useState('');
+    const [totalTime, setTotalTime]  = useState(0);
+    const appState = useRef(AppState.currentState);
+    const [tasks, setTasks] = useState([])
+  const [currentDate, setCurrentDate] = useState('')
+    // const [appStateVisible, setAppStateVisible] = useState(appState.current);
+  
+    const navigation = useNavigation();
 
   useEffect(() => {
-    db.collection('users').doc(auth.currentUser?.uid).get().then( doc => [
+    db.collection('users').doc(auth.currentUser?.uid).get().then(doc => [
       setUsername(doc.data().username)
     ])
-  })
+    setCurrentDate(new Date().toLocaleDateString())
+  }, [])
 
-    return ( 
-      <ScrollView style={styles.container}>
+  useEffect(() => {
+    const unsubscribe = db
+      .collection('users')
+      .doc(auth.currentUser?.uid)
+      .collection('Tasks')
+      .onSnapshot((snapshot) => {
+        const tasksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTasks(tasksData);
+      });
+      return () => unsubscribe();
+  }, []);
 
-        <Text style={styles.title}>Welcome Back, {username}!</Text>
-        <Text style={styles.subtitle}>Let's Start Tracking...</Text>
-        <Text style={styles.header}>Study Timer</Text>
+  return ( 
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Welcome Back, {username}!</Text>
+      <Text style={styles.subtitle}>Let's Start Tracking...</Text>
+      <Text style={styles.header}>Study Timer</Text>
 
-        <View style={styles.countdown}>
-        <CountDown
-          running={start}
-          size={40}
-          until={time}
-          digitStyle={{backgroundColor: '#EFDCF9'}}
-          digitTxtStyle={{color: '#800080'}}
-          timeToShow={['H', 'M', 'S']}
-          showSeparator={true}
-          separatorStyle={{color: '#800080'}}
-          timeLabels={{h:'', m: '', s: ''}}
-          onFinish={() => {
-            // store time into firebase
-            setStart(false)
-            setText('Start')
-            alert('Your Timer is Finished! Time to take a break!')
+      <View style={styles.countdown}>
+      <Text style={styles.text}>You have studied 
+        {'\n'}for {Math.floor(totalTime/3600)} hrs {(totalTime - Math.floor(totalTime/3600) * 3600)/60} mins today!
+      </Text>
+      <Text>Click time to add 15 mins...</Text>
+      <CountDown
+        id={countDownId}
+        running={start}
+        size={40}
+        until={time}
+        digitStyle={{backgroundColor: '#EFDCF9'}}
+        digitTxtStyle={{color: '#800080'}}
+        timeToShow={['H', 'M', 'S']}
+        showSeparator={true}
+        separatorStyle={{color: '#800080'}}
+        timeLabels={{h:'', m: '', s: ''}}
+        onFinish={() => {
+          updateTime();
+          resetCountDown();
+          alert('Your Timer is Finished! Time to take a break!')
+        }}
+        onPress = {() => {
+          if (!start) {
+            if (time >= 7200) {
+              setTime(prevtime => prevtime * 0)
+            } else {
+              setTime(prevtime => prevtime + 900)}
+            }
           }
-          }
-        />
-        <Slider
-          style={{width: 200, height: 40}}
-          thumbStyle={{ height: 10, width: 10, backgroundColor: 'purple'}}
-          minimumValue={0}
-          maximumValue={100}
-          step={1}
-          minimumTrackTintColor="#800080"
-          maximumTrackTintColor="white"
-          value={time}
-          onValueChange={value => setTime(value)}
-        />
-        <TouchableOpacity
+        }
+      />
+      
+      <TouchableOpacity
             onPress={() => {
-              setStart(!start)
-              if (start) {
-                setText('Start')
+              if (time == 0) {
+                alert("Set Time to Start Studying")
               } else {
-                setText('Stop')
+                if (start) {
+                  Alert.alert("Warning!", "Are you sure you want to Give Up ?", [
+                    {text: 'Cancel', onPress: () => {}},
+                    {text: 'Confirm ', onPress: () => resetCountDown()}
+                  ])
+                } else {
+                  setStart(true)
+                  enableKeepAwake();
+                  setText('Give Up');
+                }
               }
-            }
-            }
+            }}
             style={styles.start}
         > 
           <Text style={styles.startText}>{text}</Text>
@@ -78,21 +108,29 @@ const HomeScreen = () => {
 
       <Text style={styles.header}>Today's To-Do List</Text>
 
-        <ScrollView style={styles.todo}>
-        <Card>
-          <Card.Content>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}>
-              <Text>HomeWork</Text>
-              <Avatar.Text label="J" />
-            </View>
-          </Card.Content>
-        </Card>
-        </ScrollView> 
+      <ScrollView style={styles.todo}>
+      {tasks.filter((task) => !task.checked).length === 0 ? ( // Check if there are any unchecked tasks
+          <Text style={styles.noTasksText}>No tasks today!</Text>
+        ) : (
+          tasks
+            .filter((task) => !task.checked) // Filter out the checked tasks
+            .map((task, index) => (
+              <Card key={task.id} style={index !== 0 && styles.taskGap}>
+                <Card.Content>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Text>{task.text}</Text>
+          </View>
+        </Card.Content>
+      </Card>
+    ))
+  )}
+</ScrollView>
 
         <TouchableOpacity 
           style={styles.addbutton}
@@ -110,7 +148,7 @@ const HomeScreen = () => {
   }
   
   export default HomeScreen;
-  
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -146,6 +184,12 @@ const HomeScreen = () => {
       width: '90%'
     },
 
+    text: {
+      textAlign: 'center',
+      marginTop: 10,
+      marginBottom: 50,
+    },
+
     header: {
       paddingLeft: 25,
       alignSelf:"flex-start",
@@ -166,16 +210,18 @@ const HomeScreen = () => {
     },
 
     start: {
-      width: '30%',
-      padding: 15,
-      borderRadius: 20,
+      width: '40%',
+      padding: 10,
       alignItems: 'center',
       marginTop: 10,
+      marginBottom: 30,
+      backgroundColor: '#800080',
+      borderRadius: 5
     },
 
     startText: {
-      color: '#800080',
-      fontWeight: '700',
+      color: 'white',
+      fontWeight: '500',
       fontSize: 16,
     }, 
 
@@ -191,6 +237,19 @@ const HomeScreen = () => {
 
     addText: {
       color:'black',
-      borderRadius: '12'
-    }
-  })
+      borderRadius: 12
+    },
+
+    date: {
+      paddingLeft: 25,
+      alignSelf: "flex-start",
+      color: 'black',
+      fontWeight: '500',
+      fontSize: 20,
+      marginBottom: 10,
+    },
+
+    taskGap: {
+    marginTop: 10,
+  }
+})

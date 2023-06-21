@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import { KeyboardAvoidingView, StyleSheet, View, TextInput, TouchableOpacity, } from "react-native";
 import { MaterialIcons } from '@expo/vector-icons'; 
 
+
 export default TaskInputField = (props) => {
     const [task, setTask] = useState();
 
