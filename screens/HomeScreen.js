@@ -9,60 +9,103 @@ import { Avatar, Card } from 'react-native-paper'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { Alert } from 'react-native'
 
-  const HomeScreen = () => {
-    const [time, setTime] = useState(0);
-    const [countDownId, setCountDownId] = useState(undefined);
-    const [start, setStart] = useState(false);
-    const [text, setText] = useState('Start');
-    const [username, setUsername] = useState('');
-    const [totalTime, setTotalTime]  = useState(0);
-    const appState = useRef(AppState.currentState);
-    const [tasks, setTasks] = useState([])
-  const [currentDate, setCurrentDate] = useState('')
-    // const [appStateVisible, setAppStateVisible] = useState(appState.current);
+const HomeScreen = () => {
+  const [time, setTime] = useState(0);
+  const [countDownId, setCountDownId] = useState(undefined);
+  const [start, setStart] = useState(false);
+  const [text, setText] = useState('Start');
+  const [username, setUsername] = useState('');
+  const [totalTime, setTotalTime]  = useState(0);
+  const appState = useRef(AppState.currentState);
+  const [tasks, setTasks] = useState([])
+ // const [currentDate, setCurrentDate] = useState('')
+ // const [appStateVisible, setAppStateVisible] = useState(appState.current);
   
-    const navigation = useNavigation();
+  const navigation = useNavigation();
 
-    const enableKeepAwake = async () => {
-      await activateKeepAwakeAsync();
-    }
+  // create subcollection 
+  var date = new Date().getDate(); //Current Date
+  var month = new Date().getMonth() + 1; //Current Month
+  var year = new Date().getFullYear(); //Current Year
+  const currentDate = year + '-' + month + '-' + date;
+  const doc = db.collection('users').doc(auth.currentUser?.uid)
+  const datesDoc = doc.collection("Dates").doc(currentDate)
 
-    const resetCountDown = () => {
-      setText('Start')
-      setStart(false);
-      setTime(prevtime => prevtime * 0)
-      deactivateKeepAwake();
-    }
-    
-    const updateTime = () => {
-      setTotalTime(currentTotal())
-      datesDoc.update({
-        time: currentTotal()
+  datesDoc.get().then((docSnapShot) => {
+    if (docSnapShot.exists) {
+      //setTotalTime
+      setTotalTime(docSnapShot.data().time)
+    } else {
+      doc.collection("Dates").doc(currentDate).set({
+        time : 0
       })
     }
+  }).catch(error => alert(error))
   
+  useEffect(() => {
+    doc.get().then(doc => [
+      setUsername(doc.data().username)
+    ]);
+
+    // Generate new id based on unix timestamp (string)
+    const id = new Date().getTime().toString()
+    // Set id to state
+    setCountDownId(id)
+  }, [time])
 
   useEffect(() => {
-    db.collection('users').doc(auth.currentUser?.uid).get().then(doc => [
-      setUsername(doc.data().username)
-    ])
-    setCurrentDate(new Date().toLocaleDateString())
-  }, [])
-
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      
+      if (appState.current == 'inactive') {
+        // Stop Timer
+        setStart(false);
+        setText('Start')
+        console.log('AppState', appState.current);
+      }
+      console.log('AppState', appState.current);
+      appState.current = nextAppState;
+      // setAppStateVisible(appState.current);
+    });
+  
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+  
   useEffect(() => {
     const unsubscribe = db
-      .collection('users')
-      .doc(auth.currentUser?.uid)
-      .collection('Tasks')
-      .onSnapshot((snapshot) => {
-        const tasksData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTasks(tasksData);
-      });
-      return () => unsubscribe();
+    .collection('users')
+    .doc(auth.currentUser?.uid)
+    .collection('Tasks')
+    .onSnapshot((snapshot) => {
+      const tasksData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTasks(tasksData);
+    });
+    return () => unsubscribe();
   }, []);
+
+  const enableKeepAwake = async () => {
+    await activateKeepAwakeAsync();
+  }
+
+  const currentTotal = () => { totalTime + time } ; 
+
+  const resetCountDown = () => {
+    setText('Start')
+    setStart(false);
+    setTime(prevtime => prevtime * 0)
+    deactivateKeepAwake();
+  }
+    
+  const updateTime = () => {
+    setTotalTime(currentTotal())
+    datesDoc.update({
+      time: currentTotal()
+    })
+  }
 
   return ( 
     <ScrollView style={styles.container}>
