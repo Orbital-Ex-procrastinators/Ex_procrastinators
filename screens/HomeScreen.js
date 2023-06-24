@@ -196,7 +196,7 @@ const HomeScreen = () => {
 
         <TouchableOpacity 
           style={styles.addbutton}
-          onPress={() => {navigation.navigate("Planner")}}
+          onPress={() => {navigation.navigate("Todolist")}}
         >
           <Icon
             name="add"

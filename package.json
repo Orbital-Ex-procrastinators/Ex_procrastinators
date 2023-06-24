@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-community/datetimepicker": "^7.2.0",
     "@react-native-community/slider": "4.4.2",
     "@react-navigation/drawer": "^6.6.2",
     "@react-navigation/native": "^6.1.6",
@@ -25,6 +26,7 @@
     "react-native-calendars": "^1.1298.0",
     "react-native-circular-slider": "^1.0.1",
     "react-native-countdown-component": "^2.7.1",
+    "react-native-datepicker": "^1.7.2",
     "react-native-elements": "^3.4.3",
     "react-native-gesture-handler": "~2.9.0",
     "react-native-modal-datetime-picker": "^15.0.1",
