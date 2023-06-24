@@ -10,18 +10,44 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { db, auth } from '../firebase';
 import { useNavigation } from '@react-navigation/core';
-//import DatePicker from 'react-native-datepicker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+//import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const TodoListScreen = () => {
   const [todoList, setTodoList] = useState([]);
   const [todoText, setTodoText] = useState('');
-  const currentDate = new Date().toLocaleDateString();
+  const currentDate = new Date().toLocaleDateString(undefined, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+  
   const user = auth.currentUser;
   const navigation = useNavigation();
 
   const [todaySelected, setTodaySelected] = useState(true);
 
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('Select Date');
 
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    console.warn("A date has been picked: ", date);
+    const dt = new Date(date);
+    const x = dt.toISOString().split("T");
+    const x1 = x[0].split('-');
+    console.log(x1[2] + '/' + x1[1] + '/' + x1[0]);
+    setSelectedDate(x1[2] + '/' + x1[1] + '/' + x1[0]);
+    hideDatePicker();
+    setTodaySelected(false);
+  };
 
   useEffect(() => {
     if (user) {
@@ -40,22 +66,35 @@ const TodoListScreen = () => {
 
   const addTodo = () => {
     if (todoText && user) {
-      const userRef = db.collection('users').doc(user.uid);
-      userRef
-        .collection('Tasks')
-        .add({
-          text: todoText,
-          checked: false,
-          date: currentDate, // Add the current date to the task
-        })
-        .then(() => {
-          setTodoText('');
-        })
-        .catch((error) => {
-          console.log('Error adding task:', error);
-        });
+      if (todaySelected || selectedDate !== 'Select Date') {
+        const userRef = db.collection('users').doc(user.uid);
+        const taskDate = todaySelected ? currentDate : selectedDate;
+        userRef
+          .collection('Tasks')
+          .add({
+            text: todoText,
+            checked: false,
+            date: taskDate,
+          })
+          .then(() => {
+            setTodoText('');
+            if (!todaySelected) {
+              setSelectedDate('Select Date');
+            }
+            setTodaySelected(true);
+          })
+          .catch((error) => {
+            console.log('Error adding task:', error);
+          });
+      } else {
+        // Handle the case where "Select Date" is not a valid date
+        // You can display an error message or prompt the user to select a valid date
+        console.log('Please select a valid date');
+      }
     }
   };
+  
+
 
   const deleteTodo = (taskId) => {
     if (user) {
@@ -97,7 +136,7 @@ const TodoListScreen = () => {
         key={task.id}
         style={[
           styles.taskContainer,
-          { backgroundColor: task.date === currentDate ? '#f5f5f5' : '#fff' },
+          { backgroundColor: task.date === currentDate ? '#fff' : '#fff' },
         ]}
         onPress={() => toggleCheck(task.id, task.checked)}
       >
@@ -160,6 +199,7 @@ const TodoListScreen = () => {
 
   const handleTodayPress = () => {
     setTodaySelected(true);
+    setSelectedDate('Select Date'); 
   };
 
   const handleSelectDatePress = () => {
@@ -204,17 +244,25 @@ const TodoListScreen = () => {
             styles.button,
             !todaySelected ? styles.buttonSelected : null,
           ]}
-          onPress={handleSelectDatePress}
-        >
+          onPress={() => {
+            showDatePicker();
+          }}>
+
           <Text
             style={[
               styles.buttonText,
               !todaySelected ? styles.buttonTextSelected : null,
             ]}
           >
-            Select Date
+            {selectedDate}
           </Text>
         </TouchableOpacity>
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="date"
+          onConfirm={handleConfirm}
+          onCancel={hideDatePicker}
+        />
       </View>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {renderTodoList()}
@@ -338,7 +386,4 @@ const styles = StyleSheet.create({
   Icon: {
     marginRight: 5,
   },
-
-
-
 });

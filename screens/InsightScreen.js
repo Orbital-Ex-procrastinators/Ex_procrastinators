@@ -35,12 +35,7 @@ const InsightScreen = () => {
           }}>
       <Text>Select Date</Text>
     </TouchableOpacity>
-    <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="date"
-        onConfirm={handleConfirm}
-        onCancel={hideDatePicker}
-      />
+    
     </View>
   )
 }
