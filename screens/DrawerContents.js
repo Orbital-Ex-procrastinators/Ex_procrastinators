@@ -69,7 +69,7 @@ export function DrawerContents(props) {
              <DrawerItem 
                 icon={({color, size}) => (
                     <Icon 
-                    name="list" 
+                    name="view-list"  
                     color={color}
                     size={size}
                     />

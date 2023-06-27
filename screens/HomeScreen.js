@@ -18,7 +18,7 @@ const HomeScreen = () => {
   const [totalTime, setTotalTime]  = useState(0);
   const appState = useRef(AppState.currentState);
   // const [appStateVisible, setAppStateVisible] = useState(appState.current);
-
+  const [tasks, setTasks] = useState([])
   const navigation = useNavigation();
 
   // create subcollection 
@@ -195,7 +195,7 @@ const HomeScreen = () => {
 
         <TouchableOpacity 
           style={styles.addbutton}
-          onPress={() => {navigation.navigate("Planner")}}
+          onPress={() => {navigation.navigate("Todolist")}}
         >
           <Icon
             name="add"
