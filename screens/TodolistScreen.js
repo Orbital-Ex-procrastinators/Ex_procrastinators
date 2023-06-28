@@ -81,7 +81,6 @@ const TodoListScreen = () => {
             if (!todaySelected) {
               setSelectedDate('Select Date');
             }
-            setTodaySelected(true);
           })
           .catch((error) => {
             console.log('Error adding task:', error);
@@ -93,6 +92,7 @@ const TodoListScreen = () => {
       }
     }
   };
+  
   
 
 

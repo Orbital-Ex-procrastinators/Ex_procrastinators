@@ -18,7 +18,7 @@ const HomeScreen = () => {
   const [totalTime, setTotalTime]  = useState(0);
   const appState = useRef(AppState.currentState);
   const [tasks, setTasks] = useState([])
- // const [currentDate, setCurrentDate] = useState('')
+  //const [currentDate, setCurrentDate] = useState('')
  // const [appStateVisible, setAppStateVisible] = useState(appState.current);
   
   const navigation = useNavigation();
@@ -73,25 +73,40 @@ const HomeScreen = () => {
   }, []);
   
   useEffect(() => {
+    var date = new Date().getDate(); // Current Date
+  var month = new Date().getMonth() + 1; // Current Month
+  var year = new Date().getFullYear(); // Current Year
+  
+  // Format the day and month with leading zeros if necessary
+  var formattedDay = String(date).padStart(2, '0');
+  var formattedMonth = String(month).padStart(2, '0');
+
+  const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
+    
+    console.log('Formatted Date:', formattedDate); // Log the formatted date
+  
     const unsubscribe = db
-    .collection('users')
-    .doc(auth.currentUser?.uid)
-    .collection('Tasks')
-    .onSnapshot((snapshot) => {
-      const tasksData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setTasks(tasksData);
-    });
+      .collection('users')
+      .doc(auth.currentUser?.uid)
+      .collection('Tasks')
+      .where('date', '==', formattedDate)
+      .onSnapshot((snapshot) => {
+        const tasksData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setTasks(tasksData);
+      });
+  
     return () => unsubscribe();
   }, []);
+  
 
   const enableKeepAwake = async () => {
     await activateKeepAwakeAsync();
   }
 
-  const currentTotal = () => { totalTime + time } ; 
+  //const currentTotal = () => { totalTime + time } ; 
 
   const resetCountDown = () => {
     setText('Start')
@@ -99,11 +114,12 @@ const HomeScreen = () => {
     setTime(prevtime => prevtime * 0)
     deactivateKeepAwake();
   }
-    
+
+  
   const updateTime = () => {
-    setTotalTime(currentTotal())
+    setTotalTime(prev => prev + time)
     datesDoc.update({
-      time: currentTotal()
+      time: totalTime + time
     })
   }
 
