@@ -19,6 +19,27 @@ const ProfileScreen = () => {
   const [bio, setBio] = useState('');
   const [username, setUsername] = useState('')
 
+  const deleteSubcollection = async (subcollectionId) => {
+    try {
+
+      const parentDocRef = db.collection('users').doc(auth.currentUser?.uid);
+      const subcollectionRef = parentDocRef.collection(subcollectionId);
+      const subcollectionSnapshot = await subcollectionRef.get();
+  
+      const batch = db.batch();
+  
+      subcollectionSnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+  
+      await batch.commit();
+  
+      console.log('Subcollection deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting subcollection:', error);
+    }
+  };
+
   useEffect(() => {
     db.collection('users').doc(auth.currentUser?.uid).get().then(doc => [
       setBio(doc.data().bio),
@@ -26,23 +47,24 @@ const ProfileScreen = () => {
     ])
   })
 
-  const handledeleteUser = () => {
-    // delete collection
-    db.collection('users').doc(auth.currentUser?.uid).delete().then(() => {
-      console.log('Successfully deleted doc');
-    }).catch((error) => {
-      console.log('Error deleting user:', error);
-    });
-
-    // delete user
-    auth.currentUser.delete().then(() => {
+  const handledeleteUser = async () => {
+    try {
+      // Delete subcollections
+      await deleteSubcollection('Tasks');
+      await deleteSubcollection('Dates');
+  
+      // Delete parent document
+      await db.collection('users').doc(auth.currentUser?.uid).delete();
+  
+      // Delete user
+      await auth.currentUser.delete();
+      
       console.log('Successfully deleted user');
-      navigate.navigate('Splash')
-    }).catch((error) => {
-      console.log('Error deleting user:', error);
-    });
-
-  }
+      navigate.navigate('Splash');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
+  };
 
    return (
     <View style={{ flex: 1 }}>
