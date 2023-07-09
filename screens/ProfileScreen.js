@@ -73,9 +73,7 @@ const ProfileScreen = () => {
             <View style={styles.profileAvatarWrapper}>
             <Image style={styles.profileAvatar} source={require("../assets/profile.png")} />
               <TouchableOpacity
-                onPress={() => {
-                  // edit profile
-                }}>
+                onPress={() => {navigate.navigate("Edit Profile")}}>
                 <View style={styles.profileAction}>
                   <FeatherIcon color="#fff" name="edit-3" size={15} />
                 </View>
