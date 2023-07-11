@@ -35,6 +35,7 @@ const HomeScreen = () => {
       setTotalTime(docSnapShot.data().time)
     } else {
       doc.collection("Dates").doc(currentDate).set({
+        date: currentDate,
         time : 0
       })
     }
@@ -57,8 +58,7 @@ const HomeScreen = () => {
       if (appState.current == 'inactive') {
         // Stop Timer
         setStart(false);
-        setText('Start')
-        console.log('AppState', appState.current);
+        setText('Start');
       }
       console.log('AppState', appState.current);
       appState.current = nextAppState;

@@ -8,9 +8,24 @@ import { useNavigation } from '@react-navigation/native';
 const EditProfileScreen = () => {
   const [username, setUsername] = useState('');
   const [bio, setBio] = useState('');
-  const [newEmail, setNewEmail] = useState('');
+  const [newEmail, setNewEmail] = useState(auth.currentUser.email);
   const [newPassword, setNewPassword] = useState('');
   const navigate = useNavigation();
+
+  useEffect(() => {
+    // Fetch the current user's profile data from Firestore
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      const userRef = db.collection('users').doc(currentUser.uid);
+      userRef.get().then((doc) => {
+        if (doc.exists) {
+          const userData = doc.data();
+          setUsername(userData.username);
+          setBio(userData.bio);
+        }
+      });
+    }
+  }, []);
 
   const handleSaveProfile = () => {
     const currentUser = auth.currentUser;
