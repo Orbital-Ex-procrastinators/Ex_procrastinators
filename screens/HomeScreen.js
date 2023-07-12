@@ -312,5 +312,5 @@ const HomeScreen = () => {
 
     taskGap: {
       marginTop: 10,
-    }
+    },
   })
