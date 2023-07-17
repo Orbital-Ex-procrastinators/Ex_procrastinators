@@ -12,25 +12,31 @@ const InsightScreen = () => {
   const [monthlyData, setMonthlyData] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
-  const [selectedWeek, setSelectedWeek] = useState('Week 1');
+  const [selectedWeek, setSelectedWeek] = useState('1');
+
 
   const months = ['', 'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
   useEffect(() => {
     // Fetch daily data from Firebase
     const fetchDailyData = async () => {
-      const currentUser = auth.currentUser;
-      if (currentUser) {
-        const userRef = db.collection('users').doc(currentUser.uid);
-        const querySnapshot = await userRef.collection('Dates').get();
-        const data = querySnapshot.docs.map((doc) => doc.data());
-        setDailyData(data);
+      try {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          const userRef = db.collection('users').doc(currentUser.uid);
+          const querySnapshot = await userRef.collection('Dates').get();
+          const data = querySnapshot.docs.map((doc) => doc.data());
+          setDailyData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching daily data:', error);
+        // Handle the error as needed, e.g., show an error message to the user
       }
     };
-
+  
     fetchDailyData();
   }, []);
-
+  
   useEffect(() => {
     // Calculate weekly and monthly progress
     const calculateProgress = () => {
@@ -40,14 +46,21 @@ const InsightScreen = () => {
       dailyData.forEach((item) => {
         const [year, month, day] = item.date.split('-');
         const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-        const week = `${date.getFullYear()}-${date.getMonth() + 1}-${Math.ceil(date.getDate() / 7)}`;
 
-        // Calculate weekly progress
-        if (weeklyProgress[week]) {
-          weeklyProgress[week] += item.time / 60;
-        } else {
-          weeklyProgress[week] = item.time / 60;
+        const weekdate = new moment(item.date, 'YYYY-M-D');
+        const week = weekdate.week();
+        const weekyear = weekdate.year();
+
+        const weekKey = `${weekyear}-${week}`;
+
+        if (!weeklyProgress[weekKey]) {
+          weeklyProgress[weekKey] = [];
         }
+
+        weeklyProgress[weekKey].push({
+          day: weekdate.format('d'),
+          time: item.time,
+        });
 
         // Calculate monthly progress
         const monthKey = `${date.getFullYear()}-${date.getMonth() + 1}`;
@@ -60,10 +73,10 @@ const InsightScreen = () => {
       });
 
       // Convert progress objects to arrays for charting
-      const weeklyChartData = Object.entries(weeklyProgress).map(([week, time]) => ({
-          week,
-          time,
-      }));
+      const weeklyChartData = Object.entries(weeklyProgress).map(([weekKey, data]) => ({
+        week: weekKey,
+        data,
+      }))
 
 
       const monthlyChartData = Object.entries(monthlyProgress).map(([month, time]) => ({
@@ -92,8 +105,9 @@ const InsightScreen = () => {
     return daysInMonth
   };
 
-  const getDayLabels = () => {
-    return ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+  const getMaxWeeks = (year) => {
+    const weeksInYear = moment(year, 'YYYY').isoWeeksInYear();
+    return weeksInYear;
   }
 
   const getMonthlyTimeData = () => {
@@ -113,18 +127,21 @@ const InsightScreen = () => {
   };  
 
   const getWeeklyTimeData = () => {
-    const selectedWeeks = weeklyData.filter((week) => {
-      const [year, month] = week.week.split('-');
-      return year === selectedYear && month === selectedMonth;
+    const selectedWeeks = weeklyData.filter((item) => {
+      const [year, week] = item.week.split('-');
+      return year === selectedYear && week === selectedWeek
     });
+    
+    const weekTimeData = Array.from({ length: 7 }, () => 0); // Create an array of length 4 filled with zeros
   
-    const weekTimeData = Array.from({ length: 4 }, () => 0); // Create an array of length 4 filled with zeros
-  
-    selectedWeeks.forEach((week) => {
-      const weekIndex = parseInt(week.week.split('-')[2]) - 1;
-      weekTimeData[weekIndex] = week.time;
+    selectedWeeks.forEach((item) => {
+      item.data.map((item) => {
+        const day = item.day;
+        const time = item.time;
+        weekTimeData[day] = time;
+      })
     });
-  
+
     return weekTimeData;
   };  
 
@@ -142,7 +159,6 @@ const InsightScreen = () => {
     return monthTimeData;
   };  
 
-
   const barChartWidthDaily = Math.max(Dimensions.get('window').width - 16, dailyData.length * 100);
   const barChartWidthMonth = Math.max(Dimensions.get('window').width - 16, monthlyData.length * 100);
 
@@ -153,43 +169,13 @@ const InsightScreen = () => {
         <View tabLabel="Weekly">
         <Text style={styles.header}>Select Your Month & Year:</Text>
           <View style={styles.box}>
-          <View style={styles.selection}>
-            <Text style={styles.selectText}>Select a Month: </Text>
-            <TouchableOpacity onPress={() => {
-              if (selectedMonth > 1) {
-                setSelectedMonth((prevMonth) => String(Number(prevMonth) - 1))
-              } else {
-                setSelectedMonth((prevMonth) => '12')
-                setSelectedYear((prevYear) => String(Number(prevYear) - 1))
-              }
-              }} style={styles.button}>
-              <Icon
-                name='menu-left-outline'
-                color={'purple'}
-                size={30}
-              />
-            </TouchableOpacity>
-            <Text style={styles.text}>{months[selectedMonth]}</Text>
-            <TouchableOpacity onPress={() => {
-              if (selectedMonth < 12){
-                setSelectedMonth((prevMonth) => String(Number(prevMonth) + 1))
-              } else {
-                setSelectedMonth((prevMonth) => '1')
-                setSelectedYear((prevYear) => String(Number(prevYear) + 1))
-              }
-              }} style={styles.button}>
-              <Icon
-                name='menu-right-outline'
-                color={'purple'}
-                size={30}
-              />
-            </TouchableOpacity>
-          </View>
+          
 
           <View style={styles.selection}>
             <Text style={styles.selectText}>Select a Year: </Text>
             <TouchableOpacity onPress={() => {
               setSelectedYear((prevYear) => String(Number(prevYear) - 1))
+              setSelectedWeek((prevWeek) => '1')
             }}>
               <Icon
                 name='menu-left-outline'
@@ -201,6 +187,7 @@ const InsightScreen = () => {
             <TouchableOpacity onPress={() => {
               if (selectedYear > 0) {
                 setSelectedYear((prevYear) => String(Number(prevYear) + 1))
+                setSelectedWeek((prevWeek) => '1')
               }
             }}>
               <Icon
@@ -211,39 +198,41 @@ const InsightScreen = () => {
             </TouchableOpacity>
           </View>
           <View style={styles.selection}>
-            <TouchableOpacity
-              style={styles.weekbutton}
-              onPress={() => setSelectedWeek(prevWeek => weeks[0])}
-            >
-              <Text style={styles.selectText}>Week 1</Text>
+            <Text style={styles.selectText}>Select a Week: </Text>
+            <TouchableOpacity onPress={() => {
+              if (selectedWeek > 1) {
+                setSelectedWeek((prevWeek) => String(Number(prevWeek) - 1))
+              } 
+              }} style={styles.button}>
+              <Icon
+                name='menu-left-outline'
+                color={'purple'}
+                size={30}
+              />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.weekbutton}
-              onPress={() => setSelectedWeek(prevWeek => weeks[1])}
-            >
-              <Text style={styles.selectText}>Week 2</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.weekbutton}
-              onPress={() => setSelectedWeek(prevWeek => weeks[2])}
-            >
-              <Text style={styles.selectText}>Week 3</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.weekbutton}
-              onPress={() => setSelectedWeek(prevWeek => weeks[3])}
-            >
-              <Text style={styles.selectText}>Week 4</Text>
+            <Text style={styles.text}>Week {selectedWeek}</Text>
+            <TouchableOpacity onPress={() => {
+              if (selectedWeek < getMaxWeeks(selectedYear)){
+                setSelectedWeek((prevWeek) => String(Number(prevWeek) + 1))
+              } else {
+                setSelectedWeek((prevWeek) => '1')
+              }
+              }} style={styles.button}>
+              <Icon
+                name='menu-right-outline'
+                color={'purple'}
+                size={30}
+              />
             </TouchableOpacity>
           </View>
           </View>
 
           <View>
-            <Text style={styles.header}>{selectedWeek} of {months[selectedMonth]} {selectedYear} Progress</Text>
+            <Text style={styles.header}>Week {selectedWeek} of {selectedYear} Progress</Text>
             <ScrollView horizontal style={styles.graph}>
               <BarChart
                 data={{
-                  labels: getDayLabels(),
+                  labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
                   datasets: [{ data: getWeeklyTimeData() }],
                 }}
                 width={350}
