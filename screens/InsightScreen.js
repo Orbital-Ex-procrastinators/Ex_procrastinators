@@ -13,6 +13,7 @@ const InsightScreen = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
   const [selectedWeek, setSelectedWeek] = useState('1');
+  const [dateRange, setDateRange] = useState("Sun 2023-01-01 ~ Sat 2023-01-07")
 
 
   const months = ['', 'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
@@ -91,6 +92,9 @@ const InsightScreen = () => {
     calculateProgress();
   }, [dailyData]);
 
+  useEffect(() => {
+    calculateWeekRange(selectedWeek, selectedYear)
+  })
   const getDateLabels = (month) => {
     const mom = new moment();
     mom.set('month', month - 1); 
@@ -159,6 +163,14 @@ const InsightScreen = () => {
     return monthTimeData;
   };  
 
+  const calculateWeekRange = (week, year) => {
+    // Get the start date of the week
+    const startDate = moment().year(year).week(week).startOf('week').format('YYYY-MM-DD');
+    // Get the end date of the week
+    const endDate = moment().year(year).week(week).endOf('week').format('YYYY-MM-DD');
+    setDateRange("Sun " + startDate + " ~ Sat " + endDate);
+  }
+
   const barChartWidthDaily = Math.max(Dimensions.get('window').width - 16, dailyData.length * 100);
   const barChartWidthMonth = Math.max(Dimensions.get('window').width - 16, monthlyData.length * 100);
 
@@ -189,6 +201,7 @@ const InsightScreen = () => {
                 setSelectedYear((prevYear) => String(Number(prevYear) + 1))
                 setSelectedWeek((prevWeek) => '1')
               }
+              
             }}>
               <Icon
                 name='menu-right-outline'
@@ -202,7 +215,7 @@ const InsightScreen = () => {
             <TouchableOpacity onPress={() => {
               if (selectedWeek > 1) {
                 setSelectedWeek((prevWeek) => String(Number(prevWeek) - 1))
-              } 
+              }
               }} style={styles.button}>
               <Icon
                 name='menu-left-outline'
@@ -235,7 +248,7 @@ const InsightScreen = () => {
                   labels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
                   datasets: [{ data: getWeeklyTimeData() }],
                 }}
-                width={350}
+                width={400}
                 height={220}
                 fromZero={true}
                 showBarTops={false}
@@ -253,6 +266,7 @@ const InsightScreen = () => {
                 }}
               />
             </ScrollView>
+          <Text style={styles.dateRangeText}>{dateRange}</Text>
           </View>
         </View>
         <View tabLabel="Monthly">
@@ -325,7 +339,7 @@ const InsightScreen = () => {
                   labels: getDateLabels(selectedMonth),
                   datasets: [{ data: getMonthlyTimeData() }],
                 }}
-                width={getDates(selectedMonth) * 70}
+                width={barChartWidthMonth * 5}
                 height={220}
                 fromZero={true}
                 showBarTops={false}
@@ -383,7 +397,7 @@ const InsightScreen = () => {
                   labels: ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
                   datasets: [{ data: getYearlyTimeData() }],
                 }}
-                width={12 * 50}
+                width={1200}
                 height={220}
                 fromZero={true}
                 showBarTops={false}
@@ -501,7 +515,7 @@ const styles = StyleSheet.create({
   },
 
   graph: {
-    marginTop: 5,
+    marginTop: 10,
     marginBottom: 5,
     marginLeft: -15,
   },
@@ -533,5 +547,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '90%',
     marginTop: 10,
+    marginBottom: 5,
+  }, 
+
+  dateRangeText: {
+    alignSelf:"center",
+    color: '#800080',
+    fontWeight: '300',
+    fontSize: 15,
+    marginVertical: 10,
   }
 });
