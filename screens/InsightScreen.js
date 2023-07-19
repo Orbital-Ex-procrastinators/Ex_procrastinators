@@ -18,25 +18,22 @@ const InsightScreen = () => {
 
   const months = ['', 'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-  useEffect(() => {
-    // Fetch daily data from Firebase
-    const fetchDailyData = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (currentUser) {
-          const userRef = db.collection('users').doc(currentUser.uid);
-          const querySnapshot = await userRef.collection('Dates').get();
-          const data = querySnapshot.docs.map((doc) => doc.data());
-          setDailyData(data);
-        }
-      } catch (error) {
-        console.error('Error fetching daily data:', error);
-        // Handle the error as needed, e.g., show an error message to the user
-      }
-    };
-  
-    fetchDailyData();
-  }, []);
+useEffect(() => {
+  // Subscribe to daily data changes from Firebase
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    const userRef = db.collection('users').doc(currentUser.uid).collection('Dates');
+
+    // Set up a snapshot listener to get real-time updates
+    const unsubscribe = userRef.onSnapshot((snapshot) => {
+      const data = snapshot.docs.map((doc) => doc.data());
+      setDailyData(data);
+    });
+
+    // Unsubscribe when the component unmounts to avoid memory leaks
+    return () => unsubscribe();
+  }
+}, []);
   
   useEffect(() => {
     // Calculate weekly and monthly progress
