@@ -28,6 +28,7 @@ function DrawerRoutes() {
       <Drawer.Screen name="Planner" component={PlannerScreen}/>
       <Drawer.Screen name="Insight" component={InsightScreen} />
       <Drawer.Screen name="Todolist" component={TodoListScreen} />
+      <Drawer.Screen name="LeaderBoard" component={LeaderBoard} />
     </Drawer.Navigator>
   )
 }

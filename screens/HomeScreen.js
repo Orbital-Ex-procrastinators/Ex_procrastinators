@@ -5,7 +5,7 @@ import CountDown from 'react-native-countdown-component'
 import { auth, db} from '../firebase'
 import { Icon } from 'react-native-elements'
 import { ScrollView } from 'react-native-gesture-handler'
-import { Avatar, Card } from 'react-native-paper'
+import { Card } from 'react-native-paper'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { Alert } from 'react-native'
 

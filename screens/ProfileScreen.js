@@ -88,7 +88,7 @@ const ProfileScreen = () => {
         </View>
         
         <TouchableOpacity style={styles.button} textColor='black' onPress={() => {navigate.navigate("LeaderBoard")}}>
-            <Icon name='star'size={20}/>
+            <Icon name='trophy'size={20}/>
             <Text> LeaderBoard </Text>
         </TouchableOpacity>
 

@@ -65,11 +65,10 @@ export function DrawerContents(props) {
                 label="Insights"
                 onPress={() => {props.navigation.navigate('Insight')}}
             />
-
-             <DrawerItem 
+            <DrawerItem 
                 icon={({color, size}) => (
                     <Icon 
-                    name="view-list"  
+                    name="view-list" 
                     color={color}
                     size={size}
                     />
@@ -77,6 +76,20 @@ export function DrawerContents(props) {
                 label="To do list"
                 onPress={() => {props.navigation.navigate('Todolist')}}
             />
+
+            <DrawerItem 
+                icon={({color, size}) => (
+                    <Icon 
+                    name="trophy" 
+                    color={color}
+                    size={size}
+                    />
+                )}
+                label="Leaderboard"
+                onPress={() => {props.navigation.navigate('LeaderBoard')}}
+            />
+
+            
             </Drawer.Section>
             </DrawerContentScrollView> 
             <Drawer.Section style={styles.bottomDrawerSection}>
