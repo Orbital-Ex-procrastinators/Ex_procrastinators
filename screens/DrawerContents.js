@@ -76,6 +76,20 @@ export function DrawerContents(props) {
                 label="To do list"
                 onPress={() => {props.navigation.navigate('Todolist')}}
             />
+
+            <DrawerItem 
+                icon={({color, size}) => (
+                    <Icon 
+                    name="trophy" 
+                    color={color}
+                    size={size}
+                    />
+                )}
+                label="Leaderboard"
+                onPress={() => {props.navigation.navigate('LeaderBoard')}}
+            />
+
+            
             </Drawer.Section>
             </DrawerContentScrollView> 
             <Drawer.Section style={styles.bottomDrawerSection}>

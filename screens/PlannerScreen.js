@@ -16,7 +16,7 @@ const PlannerScreen = () => {
   const [username, setUsername] = useState('');
 
  // Fetch tasks from the "Tasks" collection for the current user
-const fetchTaskTexts = async () => {
+ const fetchTaskTexts = async () => {
   try {
     const taskTextsSnapshot = await db
       .collection('users')
@@ -27,7 +27,7 @@ const fetchTaskTexts = async () => {
     const taskTexts = [];
     taskTextsSnapshot.forEach((taskTextDoc) => {
       const taskTextData = taskTextDoc.data();
-      taskTexts.push(taskTextData.text);
+      taskTexts.push(taskTextData);
     });
 
     return taskTexts;
@@ -36,6 +36,7 @@ const fetchTaskTexts = async () => {
     return [];
   }
 };
+
 
   useEffect(() => {
     var date = new Date().getDate(); //Current Date
@@ -46,40 +47,68 @@ const fetchTaskTexts = async () => {
     var sec = new Date().getSeconds(); //Current Seconds
     setCurrentDate(year + '-' + month + '-' + date);
     setCurrentTime(hours + ':' + min + ':' + sec);
-
+   
     fetchTaskTexts();
   }, []);
+
+  useEffect(() => {
+    console.log('Current Date:', currentDate);
+    const formattedDate = formatDate(currentDate);
+    console.log('Formatted Date:', formattedDate);
+    fetchTaskTexts();
+  }, [currentDate]);
 
   const loadItems = async (day) => {
     try {
       const fetchedTaskTexts = await fetchTaskTexts();
+      const currentDate = new Date(day.timestamp);
+  
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const numDays = new Date(year + 1, month , 0).getDate();
   
       setTimeout(() => {
         setItems((prevItems) => {
           const newItems = { ...prevItems };
   
-          // Define the range of dates for which to create agenda items
-          const startDate = new Date(2023, 0, 1); // Start date (January 1, 2023)
-          const endDate = new Date(2023, 11, 31); // End date (December 31, 2023)
+          for (let i = 1; i <= numDays; i++) {
+            const targetDate = new Date(year, month, i);
+            const strTargetDate = timeToString(targetDate.getTime());
   
-          // Iterate over the range of dates
-          let currentDate = new Date(startDate);
-          while (currentDate <= endDate) {
-            const strTime = timeToString(currentDate.getTime());
-            if (!newItems[strTime]) {
-              newItems[strTime] = [];
-              for (let j = 0; j < fetchedTaskTexts.length; j++) {
-                const taskText = fetchedTaskTexts[j];
-                const itemName = `Task: ${taskText} (${formatDate(strTime)})`;
-                newItems[strTime].push({
+            if (!newItems[strTargetDate]) {
+              newItems[strTargetDate] = [];
+            }
+  
+            const tasksForDate = fetchedTaskTexts.filter((taskText) => {
+              if (taskText.date) {
+                const [day, month, year] = taskText.date.split('/');
+                const taskDate = new Date(Number(year), Number(month) - 1, Number(day) + 1);
+                const strTaskDate = timeToString(taskDate.getTime());
+                return strTaskDate === strTargetDate;
+              }
+              return false;
+            });
+  
+            if (tasksForDate.length > 0) {
+              tasksForDate.forEach((taskText) => {
+                //const itemName = `Task: ${taskText.text} (${formatDate(strTargetDate)})`;
+                const itemName = `${taskText.text}`;
+                newItems[strTargetDate].push({
                   name: itemName,
                   height: Math.max(50, Math.floor(Math.random() * 150)),
-                  taskText: taskText,
+                  taskText: taskText.text,
                   // Add other properties of the agenda item as needed
                 });
-              }
+              });
+            } else {
+              const itemName = `No task`;
+              newItems[strTargetDate].push({
+                name: itemName,
+                height: Math.max(50, Math.floor(Math.random() * 150)),
+                taskText: itemName,
+                // Add other properties of the agenda item as needed
+              });
             }
-            currentDate.setDate(currentDate.getDate() + 1);
           }
   
           return newItems;
@@ -88,10 +117,8 @@ const fetchTaskTexts = async () => {
     } catch (error) {
       console.log('Error loading items:', error);
     }
-  };
+  };  
   
-  
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
@@ -100,26 +127,28 @@ const fetchTaskTexts = async () => {
     return `${day}/${month}/${year}`;
   };
 
-  const renderItem = (item) => {
-    return (
-      <TouchableOpacity style={{ marginRight: 10, marginTop: 17 }}>
-        <Card>
-          <Card.Content>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-              }}
-            >
-              <Text>{item.name}</Text>
-              <Avatar.Text label="J" />
-            </View>
-          </Card.Content>
-        </Card>
-      </TouchableOpacity>
-    );
-  };
+const renderItem = (item) => {
+  return (
+    <TouchableOpacity style={{ marginRight: 10, marginTop: 17 }}>
+      <Card>
+        <Card.Content>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
+            <Text>{item.name}</Text>
+            
+            
+          </View>
+        </Card.Content>
+      </Card>
+    </TouchableOpacity>
+  );
+};
+
 
   return (
     <View style={{ flex: 1 }}>

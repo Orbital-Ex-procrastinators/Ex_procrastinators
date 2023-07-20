@@ -83,7 +83,7 @@ const HomeScreen = () => {
 
   const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
     
-    console.log('Formatted Date:', formattedDate); // Log the formatted date
+    //console.log('Formatted Date:', formattedDate); // Log the formatted date
   
     const unsubscribe = db
       .collection('users')

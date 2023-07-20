@@ -86,8 +86,7 @@ const TodoListScreen = () => {
             console.log('Error adding task:', error);
           });
       } else {
-        // Handle the case where "Select Date" is not a valid date
-        // You can display an error message or prompt the user to select a valid date
+        
         console.log('Please select a valid date');
       }
     }
