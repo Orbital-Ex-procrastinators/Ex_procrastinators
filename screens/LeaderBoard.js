@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { startTransition, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'react-native-paper';
@@ -8,49 +8,65 @@ const LeaderboardScreen = () => {
   const theme = useTheme();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [selectedButton, setSelectedButton] = useState(1);
-  
+
   useEffect(() => {
-    const fetchLeaderboardData = async () => {
-      try {
-        const usersRef = db.collection('users');
-        const snapshot = await usersRef.get();
-        const currentDate = getCurrentDateFormatted(); // Get the current date in "YYYY-MM-DD" format
-        console.log('Current Date:', currentDate);
-
-        const leaderboardData = await Promise.all(
-          snapshot.docs.map(async (doc) => {
-            const data = doc.data();
-            // Fetch the time data from the "Date" subcollection for the current date
-            const dateDoc = await doc.ref.collection('Dates').doc(currentDate).get();
-            let timeData = dateDoc.exists ? dateDoc.data().time : 0; // Set to 0 if "Time" data doesn't exist
-
-            if (dateDoc.exists) {
-              console.log(`Data found for current date (${currentDate}) for user: ${data.username}`);
-            } else {
-              console.log(`Data not found for current date (${currentDate}) for user: ${data.username}`);
-            }
-
-            return { ...data, time: timeData };
-          })
-        );
-
-        // Sort the leaderboardData based on time (seconds) in descending order
-        leaderboardData.sort((a, b) => b.time - a.time);
-
-        // Assign ranks to the sorted data
-        leaderboardData.forEach((data, index) => {
-          data.rank = index + 1;
-        });
-
-        setLeaderboardData(leaderboardData);
-      } catch (error) {
-        console.log('Error fetching leaderboard data:', error);
-      }
-    };
-
     fetchLeaderboardData();
-  }, []);
+  }, [selectedButton]);
+
+  const fetchLeaderboardData = async () => {
+    try {
+      const usersRef = db.collection('users');
+      const snapshot = await usersRef.get();
+      const currentDate = getCurrentDateFormatted();
   
+      // Choose the date range based on the selectedButton value
+      let startDate, endDate;
+      if (selectedButton === 2) {
+        startDate = getStartDateOfWeek();
+        endDate = currentDate;
+      } else if (selectedButton === 3) {
+        startDate = getStartDateOfMonth();
+        endDate = currentDate;
+      } else {
+        startDate = currentDate;
+        endDate = currentDate;
+      }
+  
+      const leaderboardData = [];
+      console.log(startDate)
+      console.log(endDate)
+
+      // Loop through each user to fetch the data within the date range
+      for (const doc of snapshot.docs) {
+        const data = doc.data();
+        const dateDocs = await doc.ref
+          .collection('Dates')
+          .where('date', '>=', startDate)
+          .where('date', '<=', endDate)
+          .get();
+  
+        let totalTime = 0;
+        dateDocs.forEach((dateDoc) => {
+          totalTime += dateDoc.exists ? dateDoc.data().time : 0;
+        });
+  
+        leaderboardData.push({ ...data, time: totalTime });
+      }
+  
+      // Sort the leaderboardData based on time (seconds) in descending order
+      leaderboardData.sort((a, b) => b.time - a.time);
+  
+      // Assign ranks to the sorted data
+      leaderboardData.forEach((data, index) => {
+        data.rank = index + 1;
+      });
+  
+      setLeaderboardData(leaderboardData);
+    } catch (error) {
+      console.log('Error fetching leaderboard data:', error);
+    }
+  };
+
 
   const getCurrentDateFormatted = () => {
     const date = new Date();
@@ -60,6 +76,30 @@ const LeaderboardScreen = () => {
     return `${year}-${month}-${day}`;
   };
 
+  const getStartDateOfWeek = () => {
+    const date = new Date();
+    const day = date.getDay();
+    const startDate = new Date(date);
+    startDate.setDate(date.getDate() - day); // Set the start date to the first day of the week (Sunday)
+
+    const year = startDate.getFullYear();
+    const month = startDate.getMonth() + 1;
+    const dayOfMonth = startDate.getDate();
+
+    return `${year}-${month}-${dayOfMonth}`;
+  };
+
+  const getStartDateOfMonth = () => {
+    const date = new Date();
+    date.setDate(1); // Set the day of the month to 1
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const dayOfMonth = date.getDate();
+
+    return `${year}-${month}-${dayOfMonth}`;
+  };
+  
   const formatTime = (timeInSeconds) => {
     const hours = Math.floor(timeInSeconds / 3600);
     const minutes = Math.floor((timeInSeconds % 3600) / 60);
@@ -72,12 +112,21 @@ const LeaderboardScreen = () => {
     // Add additional logic as needed for each button press
     console.log(`Button ${buttonNumber} pressed`);
   };
+
+  const getFormattedDate = (date) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(date).toLocaleDateString(undefined, options);
+  };
   
   const avatarColors = ['#95C4DE', '#F4D06F', '#9FD9B5', '#F8B4D9', '#F9C993', '#B6A5E0'];
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Leaderboard</Text>
+      <Text style={styles.dateRangeText}>
+        {getFormattedDate(selectedButton === 1 ? getCurrentDateFormatted() : selectedButton === 2 ? getStartDateOfWeek() : getStartDateOfMonth())} -{' '}
+        {getFormattedDate(getCurrentDateFormatted())}
+      </Text>
       <View style={styles.buttonRow}>
       <TouchableOpacity
           style={[
@@ -184,7 +233,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: 'center',
   },
   trophiesContainer: {
@@ -343,7 +392,13 @@ const styles = StyleSheet.create({
   buttonSelected: {
     backgroundColor: '#80008033',
   },
-
+  dateRangeText: {
+    alignSelf:"center",
+    color: '#800080',
+    fontWeight: '300',
+    fontSize: 15,
+    marginBottom: 10,
+  },
 });
 
 export default LeaderboardScreen;

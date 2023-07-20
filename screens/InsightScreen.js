@@ -178,8 +178,6 @@ useEffect(() => {
         <View tabLabel="Weekly">
         <Text style={styles.header}>Select Your Month & Year:</Text>
           <View style={styles.box}>
-          
-
           <View style={styles.selection}>
             <Text style={styles.selectText}>Select a Year: </Text>
             <TouchableOpacity onPress={() => {
@@ -238,7 +236,8 @@ useEffect(() => {
           </View>
 
           <View>
-            <Text style={styles.header}>Week {selectedWeek} of {selectedYear} Progress</Text>
+            <Text style={styles.graphheader}>Week {selectedWeek} of {selectedYear} Progress</Text>
+            <View style={styles.graphbox}>
             <ScrollView horizontal style={styles.graph}>
               <BarChart
                 data={{
@@ -246,7 +245,7 @@ useEffect(() => {
                   datasets: [{ data: getWeeklyTimeData() }],
                 }}
                 width={400}
-                height={220}
+                height={300}
                 fromZero={true}
                 showBarTops={false}
                 chartConfig={{
@@ -266,6 +265,8 @@ useEffect(() => {
           <Text style={styles.dateRangeText}>{dateRange}</Text>
           </View>
         </View>
+        </View>
+
         <View tabLabel="Monthly">
         <Text style={styles.header}>Select Your Month & Year:</Text>
           <View style={styles.box}>
@@ -329,7 +330,8 @@ useEffect(() => {
           </View>
 
           <View>
-            <Text style={styles.header}>{months[selectedMonth]} {selectedYear} Monthly Progress</Text>
+            <Text style={styles.graphheader}>{months[selectedMonth]} {selectedYear} Monthly Progress</Text>
+            <View style={styles.graphbox}>
             <ScrollView horizontal style={styles.graph}>
               <BarChart
                 data={{
@@ -337,7 +339,7 @@ useEffect(() => {
                   datasets: [{ data: getMonthlyTimeData() }],
                 }}
                 width={barChartWidthMonth * 5}
-                height={220}
+                height={300}
                 fromZero={true}
                 showBarTops={false}
                 chartConfig={{
@@ -354,6 +356,7 @@ useEffect(() => {
                 }}
               />
             </ScrollView>
+            </View>
           </View>
         </View>
 
@@ -387,7 +390,8 @@ useEffect(() => {
           </View>
 
           <View>
-            <Text style={styles.header}>{selectedYear} Progress</Text>
+            <Text style={styles.graphheader}>{selectedYear} Progress</Text>
+            <View style={styles.graphbox}>
             <ScrollView horizontal style={styles.graph}>
               <BarChart
                 data={{
@@ -395,7 +399,7 @@ useEffect(() => {
                   datasets: [{ data: getYearlyTimeData() }],
                 }}
                 width={1200}
-                height={220}
+                height={300}
                 fromZero={true}
                 showBarTops={false}
                 chartConfig={{
@@ -413,11 +417,13 @@ useEffect(() => {
               />
             </ScrollView>
           </View>
+          </View>
         </View>
 
         <View tabLabel="All Data">
           <View>
-            <Text style={styles.header}>Daily Total</Text>
+            <Text style={styles.graphheader}>Daily Total</Text>
+            <View style={styles.graphbox}>
             <ScrollView horizontal style={styles.graph}>
               <BarChart
                 data={{
@@ -442,10 +448,12 @@ useEffect(() => {
                 }}
               />
             </ScrollView>
+            </View>
           </View>
 
           <View>
-            <Text style={styles.header}>Monthly Total</Text>
+            <Text style={styles.graphheader}>Monthly Total</Text>
+            <View style={styles.graphbox}>
             <ScrollView horizontal style={styles.graph}>
               <BarChart
                 data={{
@@ -463,7 +471,7 @@ useEffect(() => {
                   fillShadowGradientFrom: 'purple',
                   fillShadowGradientTo: 'purple',
                   decimalPlaces: 0,
-                  color: (opacity = 2) => `rgba(0, 0, 0, ${opacity})`,
+                  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                   style: {
                     borderRadius: 5,
                   },
@@ -471,6 +479,7 @@ useEffect(() => {
               />
             </ScrollView>
           </View>
+        </View>
         </View>
       </ScrollableTabView>
     </View>
@@ -486,22 +495,20 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    paddingLeft: 25,
-    alignSelf: 'flex-start',
-    color: 'black',
-    fontWeight: '600',
-    fontSize: 27,
-    marginTop: 10,
-    marginBottom: 10,
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    marginTop: 15,
+    textAlign: 'center',
   },
 
   header: {
-    paddingLeft: 25,
+    paddingLeft: 20,
     alignSelf: 'flex-start',
     color: '#800080',
     fontWeight: '500',
     fontSize: 17,
-    marginTop: 10,
+    marginTop: 15,
     marginBottom: 5,
   },
 
@@ -511,10 +518,26 @@ const styles = StyleSheet.create({
     fontSize: 17,
   },
 
+  graphheader: {
+    color: '#800080',
+    fontWeight: '500',
+    fontSize: 17,
+    textAlign: 'center',
+    marginTop: 15,
+  },
+
   graph: {
     marginTop: 10,
     marginBottom: 5,
-    marginLeft: -15,
+    borderRadius: 10,
+  },
+
+  graphbox: {
+    justifyContent: 'flex-start',
+    alignSelf: 'center',
+    alignItems: 'center',
+    width: '90%',
+    marginBottom: 5,
   },
 
   selection: {

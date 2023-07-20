@@ -20,28 +20,43 @@ const HomeScreen = () => {
   // const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [tasks, setTasks] = useState([])
   const navigation = useNavigation();
-
-  // create subcollection 
-  var date = new Date().getDate(); //Current Date
-  var month = new Date().getMonth() + 1; //Current Month
-  var year = new Date().getFullYear(); //Current Year
-  const currentDate = year + '-' + month + '-' + date;
-  const doc = db.collection('users').doc(auth.currentUser?.uid)
-  const datesDoc = doc.collection("Dates").doc(currentDate)
-
-  datesDoc.get().then((docSnapShot) => {
-    if (docSnapShot.exists) {
-      //setTotalTime
-      setTotalTime(docSnapShot.data().time)
-    } else {
-      doc.collection("Dates").doc(currentDate).set({
-        date: currentDate,
-        time : 0
-      })
-    }
-  }).catch(error => alert(error))
+  const [currentDate, setCurrentDate] = useState('');
 
   useEffect(() => {
+    const getCurrentDate = () => {
+      const date = new Date().getDate();
+      const month = new Date().getMonth() + 1;
+      const year = new Date().getFullYear();
+      return `${year}-${month}-${date}`;
+    };
+  
+    const currentDate = getCurrentDate(); // Get the current date
+    setCurrentDate(currentDate); // Set the current date in state
+  
+    // Check if currentDate is valid before proceeding
+    if (!currentDate) {
+      return; // Exit early if currentDate is empty or undefined
+    }
+  
+    const docRef = db.collection('users').doc(auth.currentUser?.uid);
+    const datesDocRef = docRef.collection('Dates').doc(currentDate);
+  
+    datesDocRef.get().then((docSnapshot) => {
+      if (docSnapshot.exists) {
+        // setTotalTime
+        setTotalTime(docSnapshot.data().time);
+      } else {
+        docRef.collection('Dates').doc(currentDate).set({
+          date: currentDate,
+          time: 0,
+        });
+      }
+    }).catch(error => alert(error));
+  
+  }, [currentDate]); // Add "currentDate" to the dependency array
+
+  useEffect(() => {
+    const doc = db.collection('users').doc(auth.currentUser?.uid);
     doc.get().then(doc => [
       setUsername(doc.data().username)
     ]);
