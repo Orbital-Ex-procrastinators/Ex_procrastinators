@@ -118,6 +118,7 @@ const LeaderboardScreen = () => {
     return new Date(date).toLocaleDateString(undefined, options);
   };
   
+  
   const avatarColors = ['#95C4DE', '#F4D06F', '#9FD9B5', '#F8B4D9', '#F9C993', '#B6A5E0'];
 
   return (

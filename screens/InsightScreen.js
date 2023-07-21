@@ -13,6 +13,7 @@ const InsightScreen = () => {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [selectedMonth, setSelectedMonth] = useState((new Date().getMonth() + 1).toString());
   const [selectedWeek, setSelectedWeek] = useState('1');
+  const [startdate, setStartDate] = useState('')
   const [dateRange, setDateRange] = useState("Sun 2023-01-01 ~ Sat 2023-01-07")
 
 
@@ -92,6 +93,12 @@ useEffect(() => {
   useEffect(() => {
     calculateWeekRange(selectedWeek, selectedYear)
   })
+
+  useEffect(() => {
+    const start = moment().year(selectedYear).week(selectedWeek).startOf('week').format('DD-MM');
+    setStartDate(start);
+  })
+
   const getDateLabels = (month) => {
     const mom = new moment();
     mom.set('month', month - 1); 
@@ -218,7 +225,7 @@ useEffect(() => {
                 size={30}
               />
             </TouchableOpacity>
-            <Text style={styles.text}>Week {selectedWeek}</Text>
+            <Text style={styles.text}>{startdate}</Text>
             <TouchableOpacity onPress={() => {
               if (selectedWeek < getMaxWeeks(selectedYear)){
                 setSelectedWeek((prevWeek) => String(Number(prevWeek) + 1))
@@ -270,6 +277,32 @@ useEffect(() => {
         <View tabLabel="Monthly">
         <Text style={styles.header}>Select Your Month & Year:</Text>
           <View style={styles.box}>
+          
+
+          <View style={styles.selection}>
+            <Text style={styles.selectText}>Select a Year: </Text>
+            <TouchableOpacity onPress={() => {
+              setSelectedYear((prevYear) => String(Number(prevYear) - 1))
+            }}>
+              <Icon
+                name='menu-left-outline'
+                color={'purple'}
+                size={30}
+              />
+            </TouchableOpacity>
+            <Text style={styles.text}>{selectedYear}</Text>
+            <TouchableOpacity onPress={() => {
+              if (selectedYear > 0) {
+                setSelectedYear((prevYear) => String(Number(prevYear) + 1))
+              }
+            }}>
+              <Icon
+                name='menu-right-outline'
+                color={'purple'}
+                size={30}
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.selection}>
             <Text style={styles.selectText}>Select a Month: </Text>
             <TouchableOpacity onPress={() => {
@@ -295,31 +328,6 @@ useEffect(() => {
                 setSelectedYear((prevYear) => String(Number(prevYear) + 1))
               }
               }} style={styles.button}>
-              <Icon
-                name='menu-right-outline'
-                color={'purple'}
-                size={30}
-              />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.selection}>
-            <Text style={styles.selectText}>Select a Year: </Text>
-            <TouchableOpacity onPress={() => {
-              setSelectedYear((prevYear) => String(Number(prevYear) - 1))
-            }}>
-              <Icon
-                name='menu-left-outline'
-                color={'purple'}
-                size={30}
-              />
-            </TouchableOpacity>
-            <Text style={styles.text}>{selectedYear}</Text>
-            <TouchableOpacity onPress={() => {
-              if (selectedYear > 0) {
-                setSelectedYear((prevYear) => String(Number(prevYear) + 1))
-              }
-            }}>
               <Icon
                 name='menu-right-outline'
                 color={'purple'}

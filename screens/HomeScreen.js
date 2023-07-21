@@ -86,18 +86,32 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = db
-      .collection('users')
-      .doc(auth.currentUser?.uid)
-      .collection('Tasks')
-      .onSnapshot((snapshot) => {
-        const tasksData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTasks(tasksData);
-      });
-      return () => unsubscribe();
+    var date = new Date().getDate(); // Current Date
+    var month = new Date().getMonth() + 1; // Current Month
+    var year = new Date().getFullYear(); // Current Year
+    
+    // Format the day and month with leading zeros if necessary
+    var formattedDay = String(date).padStart(2, '0');
+    var formattedMonth = String(month).padStart(2, '0');
+
+    const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
+      
+      //console.log('Formatted Date:', formattedDate); // Log the formatted date
+    
+      const unsubscribe = db
+        .collection('users')
+        .doc(auth.currentUser?.uid)
+        .collection('Tasks')
+        .where('date', '==', formattedDate)
+        .onSnapshot((snapshot) => {
+          const tasksData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setTasks(tasksData);
+        });
+  
+    return () => unsubscribe();
   }, []);
   
   const enableKeepAwake = async () => {
