@@ -2,55 +2,80 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'react-native-paper';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
 
 const LeaderboardScreen = () => {
   const theme = useTheme();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [selectedButton, setSelectedButton] = useState(1);
-  
+ 
+
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       try {
         const usersRef = db.collection('users');
-        const snapshot = await usersRef.get();
-        const currentDate = getCurrentDateFormatted(); // Get the current date in "YYYY-MM-DD" format
+        const currentUser = auth.currentUser; // Assuming you have the current user object from Firebase Authentication
+  
+        if (!currentUser) {
+          // Handle the case when there is no authenticated user
+          console.log('No authenticated user.');
+          return;
+        }
+  
+        const currentUserId = currentUser.uid; // Get the userID of the current user
+        const currentDate = getCurrentDateFormatted();
         console.log('Current Date:', currentDate);
-
-        const leaderboardData = await Promise.all(
-          snapshot.docs.map(async (doc) => {
-            const data = doc.data();
-            // Fetch the time data from the "Date" subcollection for the current date
-            const dateDoc = await doc.ref.collection('Dates').doc(currentDate).get();
-            let timeData = dateDoc.exists ? dateDoc.data().time : 0; // Set to 0 if "Time" data doesn't exist
-
-            if (dateDoc.exists) {
-              console.log(`Data found for current date (${currentDate}) for user: ${data.username}`);
-            } else {
-              console.log(`Data not found for current date (${currentDate}) for user: ${data.username}`);
+  
+        // Find the current user's data
+        const currentUserData = await usersRef.doc(currentUserId).get();
+        if (!currentUserData.exists) {
+          // Handle the case when the current user's data is not found
+          console.log('Current user data not found.');
+          return;
+        }
+  
+        const currentUsername = currentUserData.data().username;
+        console.log('Current User ID:', currentUserId);
+        console.log('Current Username:', currentUsername);
+  
+        // Fetch the time data from the "Date" subcollection for the current date
+        const dateDoc = await currentUserData.ref.collection('Dates').doc(currentDate).get();
+        let timeData = dateDoc.exists ? dateDoc.data().time : 0; // Set to 0 if "Time" data doesn't exist
+  
+        if (dateDoc.exists) {
+          console.log(`Data found for current date (${currentDate}) for user: ${currentUsername}`);
+        } else {
+          console.log(`Data not found for current date (${currentDate}) for user: ${currentUsername}`);
+        }
+  
+        // Create the current user's leaderboard data
+        const currentUserLeaderboardData = { ...currentUserData.data(), time: timeData, rank: 1 };
+        setLeaderboardData([currentUserLeaderboardData]);
+  
+        // Fetch data for other users in the "Friends" array
+        if (currentUserData.data().Friends.length > 1) {
+          const friendsUsernames = currentUserData.data().Friends.filter(username => username !== currentUsername);
+          const friendsDataPromises = friendsUsernames.map(async (username) => {
+            const friendSnapshot = await usersRef.where('username', '==', username).get();
+            if (!friendSnapshot.empty) {
+              const friendData = friendSnapshot.docs[0].data();
+              const friendDateDoc = await friendSnapshot.docs[0].ref.collection('Dates').doc(currentDate).get();
+              const friendTimeData = friendDateDoc.exists ? friendDateDoc.data().time : 0;
+              return { ...friendData, time: friendTimeData, rank: 0 };
             }
-
-            return { ...data, time: timeData };
-          })
-        );
-
-        // Sort the leaderboardData based on time (seconds) in descending order
-        leaderboardData.sort((a, b) => b.time - a.time);
-
-        // Assign ranks to the sorted data
-        leaderboardData.forEach((data, index) => {
-          data.rank = index + 1;
-        });
-
-        setLeaderboardData(leaderboardData);
+            return null;
+          });
+          const friendsData = await Promise.all(friendsDataPromises);
+          const filteredFriendsData = friendsData.filter(friendData => friendData !== null);
+          setLeaderboardData(prevData => [...prevData, ...filteredFriendsData]);
+        }
       } catch (error) {
         console.log('Error fetching leaderboard data:', error);
       }
     };
-
+  
     fetchLeaderboardData();
   }, []);
-  
 
   const getCurrentDateFormatted = () => {
     const date = new Date();

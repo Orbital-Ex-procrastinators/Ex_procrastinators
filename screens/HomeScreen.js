@@ -37,6 +37,7 @@ const HomeScreen = () => {
       setTotalTime(docSnapShot.data().time)
     } else {
       doc.collection("Dates").doc(currentDate).set({
+        date: currentDate,
         time : 0
       })
     }

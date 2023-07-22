@@ -19,42 +19,61 @@ const ProfileScreen = () => {
   const [bio, setBio] = useState('');
   const [username, setUsername] = useState('')
 
+  const deleteSubcollection = async (subcollectionId) => {
+    try {
+
+      const parentDocRef = db.collection('users').doc(auth.currentUser?.uid);
+      const subcollectionRef = parentDocRef.collection(subcollectionId);
+      const subcollectionSnapshot = await subcollectionRef.get();
+  
+      const batch = db.batch();
+  
+      subcollectionSnapshot.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+  
+      await batch.commit();
+  
+      console.log('Subcollection deleted successfully.');
+    } catch (error) {
+      console.error('Error deleting subcollection:', error);
+    }
+  };
+
   useEffect(() => {
-    db.collection('users').doc(auth.currentUser?.uid).get().then( doc => [
+    db.collection('users').doc(auth.currentUser?.uid).get().then(doc => [
       setBio(doc.data().bio),
       setUsername(doc.data().username)
     ])
   })
 
-  const handledeleteUser = () => {
-    // delete collection
-    db.collection('users').doc(auth.currentUser?.uid).delete().then(() => {
-      console.log('Successfully deleted doc');
-    }).catch((error) => {
-      console.log('Error deleting user:', error);
-    });
-
-    // delete user
-    auth.currentUser.delete().then(() => {
+  const handledeleteUser = async () => {
+    try {
+      // Delete subcollections
+      await deleteSubcollection('Tasks');
+      await deleteSubcollection('Dates');
+  
+      // Delete parent document
+      await db.collection('users').doc(auth.currentUser?.uid).delete();
+  
+      // Delete user
+      await auth.currentUser.delete();
+      
       console.log('Successfully deleted user');
-      navigate.navigate('Splash')
-    }).catch((error) => {
-      console.log('Error deleting user:', error);
-    });
-
+      navigate.navigate('Splash');
+    } catch (error) {
+      console.error('Error deleting user:', error);
+    }
   };
 
-
-  return (
+   return (
     <View style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.profile}>
             <View style={styles.profileAvatarWrapper}>
             <Image style={styles.profileAvatar} source={require("../assets/profile.png")} />
               <TouchableOpacity
-                onPress={() => {
-                  // edit profile
-                }}>
+                onPress={() => {navigate.navigate("Edit Profile")}}>
                 <View style={styles.profileAction}>
                   <FeatherIcon color="#fff" name="edit-3" size={15} />
                 </View>
@@ -181,5 +200,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontSize: 16,
   }, 
+
+  extraButton: {
+    width: '90%',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    backgroundColor: "#800080",
+    marginBottom: 20,
+  },
+  
+  extraButtonText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 16,
+  },
 
 })
