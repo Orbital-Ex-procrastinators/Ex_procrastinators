@@ -74,7 +74,7 @@ export function DrawerContents(props) {
                     />
                 )}
                 label="To do list"
-                onPress={() => {props.navigation.navigate('Todolist')}}
+                onPress={() => {props.navigation.navigate('To do list')}}
             />
 
             <DrawerItem 

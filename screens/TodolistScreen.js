@@ -385,4 +385,5 @@ const styles = StyleSheet.create({
   Icon: {
     marginRight: 5,
   },
+  
 });

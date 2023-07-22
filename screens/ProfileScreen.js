@@ -97,6 +97,11 @@ const ProfileScreen = () => {
             <Text> Planner </Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.button} textColor='black' mode='contained-tonal' onPress={() => {navigate.navigate("Friends")}}>
+        <Icon name="account-group" size={20}/>
+            <Text> Friends </Text>
+        </TouchableOpacity>
+
         <View style={styles.buttonContainer}>
             <TouchableOpacity
                 //Login

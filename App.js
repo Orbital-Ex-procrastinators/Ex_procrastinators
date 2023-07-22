@@ -15,6 +15,10 @@ import SignupScreen from './screens/SignupScreen';
 import LeaderBoard from './screens/LeaderBoard';
 import TodolistScreen from './screens/TodolistScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
+import FriendsScreen from './screens/FriendsScreen';
+
+
+
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -27,8 +31,10 @@ function DrawerRoutes() {
       <Drawer.Screen name="Profile" component={ProfileRoutes} />
       <Drawer.Screen name="Planner" component={PlannerScreen}/>
       <Drawer.Screen name="Insight" component={InsightScreen} />
-      <Drawer.Screen name="Todolist" component={TodolistScreen} />
+      <Drawer.Screen name="To do list" component={TodolistScreen} />
       <Drawer.Screen name="LeaderBoard" component={LeaderBoard} />
+      <Drawer.Screen name="Friends" component={FriendsScreen} />
+      
     </Drawer.Navigator>
   )
 }
@@ -38,6 +44,7 @@ function ProfileRoutes() {
     <Nested.Screen options={{ headerShown: false }} name="Profile" component={ProfileScreen}/>
     <Nested.Screen name="Planner" component={PlannerScreen}/>
     <Nested.Screen name="LeaderBoard" component={LeaderBoard}/>
+    
     <Nested.Screen name="Edit Profile" component={EditProfileScreen}/>
   </Nested.Navigator>
   )
@@ -54,6 +61,7 @@ export default function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Drawer" component={DrawerContents}/>
         <Stack.Screen name="Edit Profile" component={EditProfileScreen}/>
+        <Stack.Screen name="FriendsScreen" component={FriendsScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
