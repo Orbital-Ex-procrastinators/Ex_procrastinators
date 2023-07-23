@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { auth, db } from '../firebase';
-import ScrollableTabView, { DefaultTabBar } from 'react-native-scrollable-tab-view';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import moment from "moment";
 
@@ -15,8 +14,7 @@ const InsightScreen = () => {
   const [selectedWeek, setSelectedWeek] = useState('1');
   const [startdate, setStartDate] = useState('')
   const [dateRange, setDateRange] = useState("Sun 2023-01-01 ~ Sat 2023-01-07")
-
-
+  const [activeTab, setActiveTab] = useState('Weekly');
   const months = ['', 'Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 useEffect(() => {
@@ -146,7 +144,7 @@ useEffect(() => {
       item.data.map((item) => {
         const day = item.day;
         const time = item.time;
-        weekTimeData[day] = time;
+        weekTimeData[day] = time / 60;
       })
     });
 
@@ -181,9 +179,36 @@ useEffect(() => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Your Activity</Text>
-      <ScrollableTabView initialPage={0} renderTabBar={() => <DefaultTabBar />}>
-        <View tabLabel="Weekly">
-        <Text style={styles.header}>Select Your Month & Year:</Text>
+      <View style={styles.buttonRow}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'Weekly' && styles.activeTabButton]}
+          onPress={() => setActiveTab('Weekly')}
+        >
+          <Text style={styles.tabButtonText}>Weekly</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'Monthly' && styles.activeTabButton]}
+          onPress={() => setActiveTab('Monthly')}
+        >
+          <Text style={styles.tabButtonText}>Monthly</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'Yearly' && styles.activeTabButton]}
+          onPress={() => setActiveTab('Yearly')}
+        >
+          <Text style={styles.tabButtonText}>Yearly</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'AllData' && styles.activeTabButton]}
+          onPress={() => setActiveTab('AllData')}
+        >
+          <Text style={styles.tabButtonText}>All Data</Text>
+        </TouchableOpacity>
+      </View>
+
+      {activeTab === 'Weekly' && (
+        <View>
+          <Text style={styles.header}>Select Your Month & Year:</Text>
           <View style={styles.box}>
           <View style={styles.selection}>
             <Text style={styles.selectText}>Select a Year: </Text>
@@ -273,9 +298,11 @@ useEffect(() => {
           </View>
         </View>
         </View>
+      )}
 
-        <View tabLabel="Monthly">
-        <Text style={styles.header}>Select Your Month & Year:</Text>
+      {activeTab === 'Monthly' && (
+        <View>
+          <Text style={styles.header}>Select Your Month & Year:</Text>
           <View style={styles.box}>
           
 
@@ -367,9 +394,11 @@ useEffect(() => {
             </View>
           </View>
         </View>
+      )}
 
-        <View tabLabel="Yearly">
-        <Text style={styles.header}>Select Your Year:</Text>
+      {activeTab === 'Yearly' && (
+        <View>
+          <Text style={styles.header}>Select Your Year:</Text>
           <View style={styles.box}>
             <View style={styles.selection}>
             <Text style={styles.selectText}>Select a Year: </Text>
@@ -427,9 +456,12 @@ useEffect(() => {
           </View>
           </View>
         </View>
+      )}
 
-        <View tabLabel="All Data">
-          <View>
+
+    {activeTab === 'AllData' && (
+        <View>
+           <View>
             <Text style={styles.graphheader}>Daily Total</Text>
             <View style={styles.graphbox}>
             <ScrollView horizontal style={styles.graph}>
@@ -489,10 +521,9 @@ useEffect(() => {
           </View>
         </View>
         </View>
-      </ScrollableTabView>
+      )}
     </View>
-  );
-};
+  );}
 
 export default InsightScreen;
 
@@ -584,5 +615,36 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     fontSize: 15,
     marginVertical: 10,
-  }
+  },
+
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginTop: 5,
+    marginBottom: 5,
+    marginHorizontal: 10,
+  },
+
+  tabButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#800080',
+    marginHorizontal: 5,
+  },
+
+  tabButtonText: {
+    color: '#800080',
+    fontWeight: 'bold',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+
+  activeTabButton: {
+    backgroundColor: '#80008033',
+  },
 });
