@@ -2,12 +2,20 @@ import React, { startTransition, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'react-native-paper';
-import { db } from '../firebase';
+import { db, auth } from '../firebase';
+import { useNavigation } from '@react-navigation/native';
+
 
 const LeaderboardScreen = () => {
+  const navigation = useNavigation();
   const theme = useTheme();
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [selectedButton, setSelectedButton] = useState(1);
+
+  const handleAddFriends = () => {
+    navigation.navigate('FriendsScreen');
+    console.log('Add friends button pressed');
+  };
 
   useEffect(() => {
     fetchLeaderboardData();
@@ -16,41 +24,60 @@ const LeaderboardScreen = () => {
   const fetchLeaderboardData = async () => {
     try {
       const usersRef = db.collection('users');
-      const snapshot = await usersRef.get();
-      const currentDate = getCurrentDateFormatted();
+      const currentUser = auth.currentUser;
   
-      // Choose the date range based on the selectedButton value
-      let startDate, endDate;
-      if (selectedButton === 2) {
-        startDate = getStartDateOfWeek();
-        endDate = currentDate;
-      } else if (selectedButton === 3) {
-        startDate = getStartDateOfMonth();
-        endDate = currentDate;
-      } else {
-        startDate = currentDate;
-        endDate = currentDate;
+      if (!currentUser) {
+        // Handle the case when there is no authenticated user
+        console.log('No authenticated user.');
+        return;
       }
   
-      const leaderboardData = [];
-      console.log(startDate)
-      console.log(endDate)
-
-      // Loop through each user to fetch the data within the date range
-      for (const doc of snapshot.docs) {
-        const data = doc.data();
-        const dateDocs = await doc.ref
-          .collection('Dates')
-          .where('date', '>=', startDate)
-          .where('date', '<=', endDate)
-          .get();
+      const currentUserId = currentUser.uid; // Get the userID of the current user
+      const currentDate = getCurrentDateFormatted();
+      console.log('Current Date:', currentDate);
   
-        let totalTime = 0;
-        dateDocs.forEach((dateDoc) => {
-          totalTime += dateDoc.exists ? dateDoc.data().time : 0;
+      // Find the current user's data
+      const currentUserData = await usersRef.doc(currentUserId).get();
+      if (!currentUserData.exists) {
+        // Handle the case when the current user's data is not found
+        console.log('Current user data not found.');
+        return;
+      }
+  
+      const currentUsername = currentUserData.data().username;
+      console.log('Current User ID:', currentUserId);
+      console.log('Current Username:', currentUsername);
+  
+      // Fetch the time data from the "Date" subcollection for the current date
+      const dateDoc = await currentUserData.ref.collection('Dates').doc(currentDate).get();
+      let timeData = dateDoc.exists ? dateDoc.data().time : 0; // Set to 0 if "Time" data doesn't exist
+  
+      if (dateDoc.exists) {
+        console.log(`Data found for current date (${currentDate}) for user: ${currentUsername}`);
+      } else {
+        console.log(`Data not found for current date (${currentDate}) for user: ${currentUsername}`);
+      }
+  
+      // Create the current user's leaderboard data
+      const currentUserLeaderboardData = { ...currentUserData.data(), time: timeData, rank: 1 };
+      const leaderboardData = [currentUserLeaderboardData];
+  
+      // Fetch data for other users in the "Friends" array
+      if (currentUserData.data().Friends.length >= 1) {
+        const friendsUsernames = currentUserData.data().Friends.filter(username => username !== currentUsername);
+        const friendsDataPromises = friendsUsernames.map(async (username) => {
+          const friendSnapshot = await usersRef.where('username', '==', username).get();
+          if (!friendSnapshot.empty) {
+            const friendData = friendSnapshot.docs[0].data();
+            const friendDateDoc = await friendSnapshot.docs[0].ref.collection('Dates').doc(currentDate).get();
+            const friendTimeData = friendDateDoc.exists ? friendDateDoc.data().time : 0;
+            return { ...friendData, time: friendTimeData, rank: 0 };
+          }
+          return null;
         });
-  
-        leaderboardData.push({ ...data, time: totalTime });
+        const friendsData = await Promise.all(friendsDataPromises);
+        const filteredFriendsData = friendsData.filter(friendData => friendData !== null);
+        leaderboardData.push(...filteredFriendsData);
       }
   
       // Sort the leaderboardData based on time (seconds) in descending order
@@ -79,15 +106,17 @@ const LeaderboardScreen = () => {
   const getStartDateOfWeek = () => {
     const date = new Date();
     const day = date.getDay();
+    const daysToSubtract = day === 0 ? 6 : day - 1; // If the current day is Sunday (0), subtract 6 days to get the start of the week; otherwise, subtract (currentDay - 1) days.
     const startDate = new Date(date);
-    startDate.setDate(date.getDate() - day); // Set the start date to the first day of the week (Sunday)
-
+    startDate.setDate(date.getDate() - daysToSubtract); // Set the start date to the first day of the week (Sunday)
+  
     const year = startDate.getFullYear();
     const month = startDate.getMonth() + 1;
     const dayOfMonth = startDate.getDate();
-
+  
     return `${year}-${month}-${dayOfMonth}`;
   };
+  
 
   const getStartDateOfMonth = () => {
     const date = new Date();
@@ -123,107 +152,117 @@ const LeaderboardScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Leaderboard</Text>
-      <Text style={styles.dateRangeText}>
-        {getFormattedDate(selectedButton === 1 ? getCurrentDateFormatted() : selectedButton === 2 ? getStartDateOfWeek() : getStartDateOfMonth())} -{' '}
-        {getFormattedDate(getCurrentDateFormatted())}
-      </Text>
-      <View style={styles.buttonRow}>
-      <TouchableOpacity
-          style={[
-            styles.leaderboardButton,
-            selectedButton === 1 ? styles.buttonSelected : null,
-          ]}
-          onPress={() => handleButtonPress(1)}
-        >
-          <Text style={styles.leaderboardButtonText}>Daily</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.leaderboardButton,
-            selectedButton === 2 ? styles.buttonSelected : null,
-          ]}
-          onPress={() => handleButtonPress(2)}
-        >
-          <Text style={styles.leaderboardButtonText}>Weekly</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.leaderboardButton,
-            selectedButton === 3 ? styles.buttonSelected : null,
-          ]}
-          onPress={() => handleButtonPress(3)}
-        >
-          <Text style={styles.leaderboardButtonText}>Monthly</Text>
-        </TouchableOpacity>
-      </View>
-      <View style={styles.trophiesContainer}>
-        {leaderboardData.slice(0, 3).map((item, index) => (
-          <View
-            key={index}
+      <ScrollView>
+        {/* Leaderboard content */}
+        <Text style={styles.title}>Leaderboard</Text>
+        <Text style={styles.dateRangeText}>
+          {getFormattedDate(selectedButton === 1 ? getCurrentDateFormatted() : selectedButton === 2 ? getStartDateOfWeek() : getStartDateOfMonth())} -{' '}
+          {getFormattedDate(getCurrentDateFormatted())}
+        </Text>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
             style={[
-              styles.trophyContainer,
-              styles.border,
-              index === 1 && styles.secondPlace,
-              index === 0 && styles.firstPlace,
-              index === 2 && styles.thirdPlace,
+              styles.leaderboardButton,
+              selectedButton === 1 ? styles.buttonSelected : null,
             ]}
+            onPress={() => handleButtonPress(1)}
           >
-            <Icon
-              name="trophy"
-              size={50}
-              color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
-            />
-            <Text style={styles.trophyPosition}>{index + 1}</Text>
-            <Text style={[styles.trophyName, { fontSize: 14 }]}>{item.username}</Text>
-            <Text style={styles.timeText}>{formatTime(item.time)}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.headerContainer}>
-        <View style={styles.headerBox}>
-          <Text style={[styles.headerRank, { marginRight: 54 }]}>Rank</Text>
-          <Text style={[styles.headerName, { marginRight: 110 }]}>User</Text>
-          <Text style={styles.headerName}>Hours</Text>
+            <Text style={styles.leaderboardButtonText}>Daily</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.leaderboardButton,
+              selectedButton === 2 ? styles.buttonSelected : null,
+            ]}
+            onPress={() => handleButtonPress(2)}
+          >
+            <Text style={styles.leaderboardButtonText}>Weekly</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.leaderboardButton,
+              selectedButton === 3 ? styles.buttonSelected : null,
+            ]}
+            onPress={() => handleButtonPress(3)}
+          >
+            <Text style={styles.leaderboardButtonText}>Monthly</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-      <ScrollView style={styles.friendsContainer} showsVerticalScrollIndicator={false}>
-        {leaderboardData.slice(3).map((item, index) => (
-          <View
-            key={index}
-            style={[
-              styles.friendItem,
-              styles.rankBox,
-              index >= 1 && styles.friendItemSpacing,
-            ]}
-          >
-            <View style={styles.rankContainer}>
-              <Text style={styles.rankPosition}>{index + 4}</Text>
-            </View>
-            <View style={styles.avatarContainer}>
-              <View
-                style={[
-                  styles.avatar,
-                  { backgroundColor: avatarColors[index % avatarColors.length] },
-                ]}
-              >
-                <Text style={styles.avatarText}>{item.username.charAt(0)}</Text>
-              </View>
-            </View>
-            <View style={styles.userInfo}>
-              <Text style={styles.friendName}>{item.username}</Text>
-            </View>
-            <View style={styles.timeContainer}>
+        <View style={styles.trophiesContainer}>
+          {leaderboardData.slice(0, 3).map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.trophyContainer,
+                styles.border,
+                index === 1 && styles.secondPlace,
+                index === 0 && styles.firstPlace,
+                index === 2 && styles.thirdPlace,
+              ]}
+            >
+              <Icon
+                name="trophy"
+                size={50}
+                color={index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : '#CD7F32'}
+              />
+              <Text style={styles.trophyPosition}>{index + 1}</Text>
+              <Text style={[styles.trophyName, { fontSize: 14 }]}>{item.username}</Text>
               <Text style={styles.timeText}>{formatTime(item.time)}</Text>
             </View>
+          ))}
+        </View>
+
+        <View style={styles.headerContainer}>
+          <View style={styles.headerBox}>
+            <Text style={[styles.headerRank, { marginRight: 54 }]}>Rank</Text>
+            <Text style={[styles.headerName, { marginRight: 110 }]}>User</Text>
+            <Text style={styles.headerName}>Hours</Text>
           </View>
-        ))}
+        </View>
+        <ScrollView style={styles.friendsContainer} showsVerticalScrollIndicator={false}>
+          {leaderboardData.slice(3).map((item, index) => (
+            <View
+              key={index}
+              style={[
+                styles.friendItem,
+                styles.rankBox,
+                index >= 1 && styles.friendItemSpacing,
+              ]}
+            >
+              <View style={styles.rankContainer}>
+                <Text style={styles.rankPosition}>{index + 4}</Text>
+              </View>
+              <View style={styles.avatarContainer}>
+                <View
+                  style={[
+                    styles.avatar,
+                    { backgroundColor: avatarColors[index % avatarColors.length] },
+                  ]}
+                >
+                  <Text style={styles.avatarText}>{item.username.charAt(0)}</Text>
+                </View>
+              </View>
+              <View style={styles.userInfo}>
+                <Text style={styles.friendName}>{item.username}</Text>
+              </View>
+              <View style={styles.timeContainer}>
+                <Text style={styles.timeText}>{formatTime(item.time)}</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* "Add Friends" button */}
+        <TouchableOpacity
+          style={styles.addFriendsButton}
+          onPress={handleAddFriends}
+        >
+          <Text style={styles.addFriendsButtonText}>Add Friends</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -399,6 +438,28 @@ const styles = StyleSheet.create({
     fontWeight: '300',
     fontSize: 15,
     marginBottom: 10,
+  },
+  addFriendsButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    backgroundColor: '#800080',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: -20, // Adjust the margin value as needed to move the button up
+  },
+  addFriendsButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+
+  addFriendsButtonContainer: {
+    position: 'absolute',
+    right: 0,
+    left: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

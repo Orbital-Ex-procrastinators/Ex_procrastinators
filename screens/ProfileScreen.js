@@ -88,13 +88,18 @@ const ProfileScreen = () => {
         </View>
         
         <TouchableOpacity style={styles.button} textColor='black' onPress={() => {navigate.navigate("LeaderBoard")}}>
-            <Icon name='trophy'size={20}/>
+            <Icon name='star'size={20}/>
             <Text> LeaderBoard </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} textColor='black' mode='contained-tonal' onPress={() => {navigate.navigate("Planner")}}>
         <Icon name="calendar-text-outline" size={20}/>
             <Text> Planner </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} textColor='black' mode='contained-tonal' onPress={() => {navigate.navigate("Friends")}}>
+        <Icon name="account-group" size={20}/>
+            <Text> Friends </Text>
         </TouchableOpacity>
 
         <View style={styles.buttonContainer}>

@@ -15,6 +15,7 @@ import SignupScreen from './screens/SignupScreen';
 import LeaderBoard from './screens/LeaderBoard';
 import TodoListScreen from './screens/ToDoListScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
+import FriendsScreen from './screens/FriendsScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -29,6 +30,7 @@ function DrawerRoutes() {
       <Drawer.Screen name="Insight" component={InsightScreen} />
       <Drawer.Screen name="Todolist" component={TodoListScreen} />
       <Drawer.Screen name="LeaderBoard" component={LeaderBoard} />
+      <Drawer.Screen name="Friends" component={FriendsScreen} />
     </Drawer.Navigator>
   )
 }
@@ -54,6 +56,7 @@ export default function App() {
         <Stack.Screen options={{ headerShown: false }} name="Profile" component={ProfileRoutes} />
         <Stack.Screen name="Drawer" component={DrawerContents}/>
         <Stack.Screen name="Edit Profile" component={EditProfileScreen}/>
+        <Stack.Screen name="FriendsScreen" component={FriendsScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

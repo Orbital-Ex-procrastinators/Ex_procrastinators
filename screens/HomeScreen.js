@@ -131,7 +131,7 @@ const HomeScreen = () => {
   const updateTime = () => {
     setTotalTime(currentTotal())
     datesDoc.update({
-      time: currentTotal()
+      time: currentTotal() //check
     })
   }
 
