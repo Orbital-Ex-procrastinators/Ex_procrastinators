@@ -5,7 +5,7 @@ import CountDown from 'react-native-countdown-component'
 import { auth, db} from '../firebase'
 import { Icon } from 'react-native-elements'
 import { ScrollView } from 'react-native-gesture-handler'
-import { Avatar, Card } from 'react-native-paper'
+import { Card } from 'react-native-paper'
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { Alert } from 'react-native'
 
@@ -17,33 +17,46 @@ const HomeScreen = () => {
   const [username, setUsername] = useState('');
   const [totalTime, setTotalTime]  = useState(0);
   const appState = useRef(AppState.currentState);
+  // const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [tasks, setTasks] = useState([])
-  //const [currentDate, setCurrentDate] = useState('')
- // const [appStateVisible, setAppStateVisible] = useState(appState.current);
-  
   const navigation = useNavigation();
+  const [currentDate, setCurrentDate] = useState('');
 
-  // create subcollection 
-  var date = new Date().getDate(); //Current Date
-  var month = new Date().getMonth() + 1; //Current Month
-  var year = new Date().getFullYear(); //Current Year
-  const currentDate = year + '-' + month + '-' + date;
-  const doc = db.collection('users').doc(auth.currentUser?.uid)
-  const datesDoc = doc.collection("Dates").doc(currentDate)
-
-  datesDoc.get().then((docSnapShot) => {
-    if (docSnapShot.exists) {
-      //setTotalTime
-      setTotalTime(docSnapShot.data().time)
-    } else {
-      doc.collection("Dates").doc(currentDate).set({
-        date: currentDate,
-        time : 0
-      })
-    }
-  }).catch(error => alert(error))
-  
   useEffect(() => {
+    const getCurrentDate = () => {
+      const date = new Date().getDate();
+      const month = new Date().getMonth() + 1;
+      const year = new Date().getFullYear();
+      return `${year}-${month}-${date}`;
+    };
+  
+    const currentDate = getCurrentDate(); // Get the current date
+    setCurrentDate(currentDate); // Set the current date in state
+  
+    // Check if currentDate is valid before proceeding
+    if (!currentDate) {
+      return; // Exit early if currentDate is empty or undefined
+    }
+  
+    const docRef = db.collection('users').doc(auth.currentUser?.uid);
+    const datesDocRef = docRef.collection('Dates').doc(currentDate);
+  
+    datesDocRef.get().then((docSnapshot) => {
+      if (docSnapshot.exists) {
+        // setTotalTime
+        setTotalTime(docSnapshot.data().time);
+      } else {
+        docRef.collection('Dates').doc(currentDate).set({
+          date: currentDate,
+          time: 0,
+        });
+      }
+    }).catch(error => alert(error));
+  
+  }, [currentDate]); // Add "currentDate" to the dependency array
+
+  useEffect(() => {
+    const doc = db.collection('users').doc(auth.currentUser?.uid);
     doc.get().then(doc => [
       setUsername(doc.data().username)
     ]);
@@ -56,58 +69,56 @@ const HomeScreen = () => {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
-      
+
       if (appState.current == 'inactive') {
         // Stop Timer
         setStart(false);
-        setText('Start')
-        console.log('AppState', appState.current);
+        setText('Start');
       }
       console.log('AppState', appState.current);
       appState.current = nextAppState;
       // setAppStateVisible(appState.current);
     });
-  
+
     return () => {
       subscription.remove();
     };
   }, []);
-  
+
   useEffect(() => {
     var date = new Date().getDate(); // Current Date
-  var month = new Date().getMonth() + 1; // Current Month
-  var year = new Date().getFullYear(); // Current Year
-  
-  // Format the day and month with leading zeros if necessary
-  var formattedDay = String(date).padStart(2, '0');
-  var formattedMonth = String(month).padStart(2, '0');
-
-  const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
+    var month = new Date().getMonth() + 1; // Current Month
+    var year = new Date().getFullYear(); // Current Year
     
-    //console.log('Formatted Date:', formattedDate); // Log the formatted date
-  
-    const unsubscribe = db
-      .collection('users')
-      .doc(auth.currentUser?.uid)
-      .collection('Tasks')
-      .where('date', '==', formattedDate)
-      .onSnapshot((snapshot) => {
-        const tasksData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTasks(tasksData);
-      });
+    // Format the day and month with leading zeros if necessary
+    var formattedDay = String(date).padStart(2, '0');
+    var formattedMonth = String(month).padStart(2, '0');
+
+    const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
+      
+      //console.log('Formatted Date:', formattedDate); // Log the formatted date
+    
+      const unsubscribe = db
+        .collection('users')
+        .doc(auth.currentUser?.uid)
+        .collection('Tasks')
+        .where('date', '==', formattedDate)
+        .onSnapshot((snapshot) => {
+          const tasksData = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setTasks(tasksData);
+        });
   
     return () => unsubscribe();
   }, []);
   
-
   const enableKeepAwake = async () => {
     await activateKeepAwakeAsync();
   }
 
-  //const currentTotal = () => { totalTime + time } ; 
+  const currentTotal = () => { totalTime + time } ; 
 
   const resetCountDown = () => {
     setText('Start')
@@ -118,51 +129,51 @@ const HomeScreen = () => {
 
   
   const updateTime = () => {
-    setTotalTime(prev => prev + time)
+    setTotalTime(currentTotal())
     datesDoc.update({
-      time: totalTime + time
+      time: currentTotal() //check
     })
   }
 
   return ( 
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Welcome Back, {username}!</Text>
-      <Text style={styles.subtitle}>Let's Start Tracking...</Text>
-      <Text style={styles.header}>Study Timer</Text>
+      <ScrollView style={styles.container}>
+        <Text style={styles.title}>Welcome Back, {username}!</Text>
+        <Text style={styles.subtitle}>Let's Start Tracking...</Text>
+        <Text style={styles.header}>Study Timer</Text>
 
-      <View style={styles.countdown}>
-      <Text style={styles.text}>You have studied 
-        {'\n'}for {Math.floor(totalTime/3600)} hrs {(totalTime - Math.floor(totalTime/3600) * 3600)/60} mins today!
-      </Text>
-      <Text>Click time to add 15 mins...</Text>
-      <CountDown
-        id={countDownId}
-        running={start}
-        size={40}
-        until={time}
-        digitStyle={{backgroundColor: '#EFDCF9'}}
-        digitTxtStyle={{color: '#800080'}}
-        timeToShow={['H', 'M', 'S']}
-        showSeparator={true}
-        separatorStyle={{color: '#800080'}}
-        timeLabels={{h:'', m: '', s: ''}}
-        onFinish={() => {
-          updateTime();
-          resetCountDown();
-          alert('Your Timer is Finished! Time to take a break!')
-        }}
-        onPress = {() => {
-          if (!start) {
-            if (time >= 7200) {
-              setTime(prevtime => prevtime * 0)
-            } else {
-              setTime(prevtime => prevtime + 900)}
+        <View style={styles.countdown}>
+        <Text style={styles.text}>You have studied 
+          {'\n'}for {Math.floor(totalTime/3600)} hrs {(totalTime - Math.floor(totalTime/3600) * 3600)/60} mins today!
+        </Text>
+        <Text>Click time to add 15 mins...</Text>
+        <CountDown
+          id={countDownId}
+          running={start}
+          size={40}
+          until={time}
+          digitStyle={{backgroundColor: '#EFDCF9'}}
+          digitTxtStyle={{color: '#800080'}}
+          timeToShow={['H', 'M', 'S']}
+          showSeparator={true}
+          separatorStyle={{color: '#800080'}}
+          timeLabels={{h:'', m: '', s: ''}}
+          onFinish={() => {
+            updateTime();
+            resetCountDown();
+            alert('Your Timer is Finished! Time to take a break!')
+          }}
+          onPress = {() => {
+            if (!start) {
+              if (time >= 7200) {
+                setTime(prevtime => prevtime * 0)
+              } else {
+                setTime(prevtime => prevtime + 900)}
+              }
             }
           }
-        }
-      />
-      
-      <TouchableOpacity
+        />
+
+        <TouchableOpacity
             onPress={() => {
               if (time == 0) {
                 alert("Set Time to Start Studying")
@@ -209,7 +220,7 @@ const HomeScreen = () => {
       </Card>
     ))
   )}
-</ScrollView>
+  </ScrollView>
 
         <TouchableOpacity 
           style={styles.addbutton}
@@ -227,7 +238,7 @@ const HomeScreen = () => {
   }
   
   export default HomeScreen;
-
+  
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -329,6 +340,6 @@ const HomeScreen = () => {
     },
 
     taskGap: {
-    marginTop: 10,
-  }
-})
+      marginTop: 10,
+    },
+  })

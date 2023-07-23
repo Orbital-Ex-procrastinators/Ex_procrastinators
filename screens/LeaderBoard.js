@@ -13,7 +13,7 @@ const LeaderboardScreen = () => {
   const [selectedButton, setSelectedButton] = useState(1);
 
   const handleAddFriends = () => {
-    navigation.navigate('FriendsScreen');
+    navigation.navigate('Friends');
     console.log('Add friends button pressed');
   };
 

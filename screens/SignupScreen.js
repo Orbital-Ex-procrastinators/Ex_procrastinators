@@ -34,6 +34,11 @@ const SignupScreen = () => {
       }, [])
 
     const handleSignUp = () => {
+        if (!username) {
+            // Show an error message that the username field is required
+            alert("Please enter your username.");
+            return;
+        }
         auth
           .createUserWithEmailAndPassword(email, password)
           .then(userCredentials => {

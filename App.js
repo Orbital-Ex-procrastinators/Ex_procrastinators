@@ -61,7 +61,7 @@ export default function App() {
         <Stack.Screen name="Profile" component={ProfileScreen} />
         <Stack.Screen name="Drawer" component={DrawerContents}/>
         <Stack.Screen name="Edit Profile" component={EditProfileScreen}/>
-        <Stack.Screen name="FriendsScreen" component={FriendsScreen}/>
+        <Stack.Screen name="Friends" component={FriendsScreen}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
