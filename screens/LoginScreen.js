@@ -111,12 +111,16 @@ const LoginScreen = () => {
         <View flexDirection='row'>
             <Text> Don't have an account? </Text>
             <TouchableOpacity
-                //Sign-up
-                onPress={() => {navigation.replace("Signup")}}
+                onPress={() => navigation.replace("Signup")}
             >
-                <Text style={styles.signupText} > Sign-up </Text>
+                <Text style={styles.signupText}> Sign-up </Text>
             </TouchableOpacity>
         </View>
+        <TouchableOpacity
+            onPress={() => navigation.navigate("ForgotPassword")}
+        >
+            <Text style={styles.forgotPasswordText}> Forgot Password? </Text>
+        </TouchableOpacity>
         </View>
     </View>
   )
@@ -191,4 +195,8 @@ const styles = StyleSheet.create({
         color: '#800080',
         fontWeight: '700',
     },
+    forgotPasswordText: {
+        color: '#800080',
+        fontWeight: '700',
+    }
 });

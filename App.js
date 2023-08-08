@@ -16,6 +16,7 @@ import LeaderBoard from './screens/LeaderBoard';
 import TodoListScreen from './screens/ToDoListScreen';
 import EditProfileScreen from './screens/EditProfileScreen';
 import FriendsScreen from './screens/FriendsScreen';
+import ForgotPasswordScreen from './screens/ForgetPasswordScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -50,6 +51,7 @@ export default function App() {
       <Stack.Navigator>
         <Stack.Screen options={{ headerShown: false }} name="Splash" component={SplashScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Login" component={LoginScreen} />
+        <Stack.Screen options={{ headerShown: false }} name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Signup" component={SignupScreen} />
         <Stack.Screen options={{ headerShown: false }} name="Routes" component={DrawerRoutes} />
         <Stack.Screen options={{ headerShown: false }} name="ProfileScreen" component={ProfileRoutes} />

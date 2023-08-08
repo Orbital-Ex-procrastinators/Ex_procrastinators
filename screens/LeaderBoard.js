@@ -1,4 +1,4 @@
-import React, {useEffect, useState } from 'react';
+import React, { startTransition, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from 'react-native-paper';
@@ -13,13 +13,13 @@ const LeaderboardScreen = () => {
   const [selectedButton, setSelectedButton] = useState(1);
 
   const handleAddFriends = () => {
-    navigation.navigate('FriendsScreen');
+    navigation.navigate('Friends');
     console.log('Add friends button pressed');
   };
 
   useEffect(() => {
     fetchLeaderboardData();
-  }, [selectedButton]);
+  }, []);
 
   const fetchLeaderboardData = async () => {
     try {
@@ -99,9 +99,10 @@ const LeaderboardScreen = () => {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1);
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
+    const day = String(date.getDate());
+    const formattedDate = `${year}-${month}-${day}`;
+    return formattedDate;
+  };  
 
   const getStartDateOfWeek = () => {
     const date = new Date();
@@ -143,10 +144,13 @@ const LeaderboardScreen = () => {
   };
 
   const getFormattedDate = (date) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options = {
+      year: 'numeric',
+      month: 'long',
+      day: '2-digit', // Use '2-digit' for the day part
+    };
     return new Date(date).toLocaleDateString(undefined, options);
   };
-  
   
   const avatarColors = ['#95C4DE', '#F4D06F', '#9FD9B5', '#F8B4D9', '#F9C993', '#B6A5E0'];
 
@@ -188,6 +192,10 @@ const LeaderboardScreen = () => {
             <Text style={styles.leaderboardButtonText}>Monthly</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={styles.refreshButton} onPress={fetchLeaderboardData}>
+            <Icon name="refresh" size={20} color={theme.colors.primary} />
+            <Text style={styles.refreshButtonText}>Refresh</Text>
+        </TouchableOpacity>
         <View style={styles.trophiesContainer}>
           {leaderboardData.slice(0, 3).map((item, index) => (
             <View
@@ -211,7 +219,6 @@ const LeaderboardScreen = () => {
             </View>
           ))}
         </View>
-
         <View style={styles.headerContainer}>
           <View style={styles.headerBox}>
             <Text style={[styles.headerRank, { marginRight: 54 }]}>Rank</Text>
@@ -404,15 +411,14 @@ const styles = StyleSheet.create({
     top: -20,
     right: -20,
   },
-
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
     marginTop: 5,
-    marginBottom: 20,
-    marginHorizontal: 10,
+    marginBottom: 5,
+    marginHorizontal: 5,
   },
   leaderboardButton: {
     flex: 1,
@@ -453,13 +459,31 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-
   addFriendsButtonContainer: {
     position: 'absolute',
     right: 0,
     left: 0,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  refreshButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#800080',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginTop: 5,
+    marginBottom: 10,
+  },
+  refreshButtonText: {
+    marginLeft: 5,
+    color: '#800080',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

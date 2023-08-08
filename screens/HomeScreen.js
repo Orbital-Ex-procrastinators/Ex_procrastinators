@@ -17,10 +17,10 @@ const HomeScreen = () => {
   const [username, setUsername] = useState('');
   const [totalTime, setTotalTime]  = useState(0);
   const appState = useRef(AppState.currentState);
-  // const [appStateVisible, setAppStateVisible] = useState(appState.current);
   const [tasks, setTasks] = useState([])
   const navigation = useNavigation();
   const [currentDate, setCurrentDate] = useState('');
+  const user = auth.currentUser;
 
   useEffect(() => {
     const getCurrentDate = () => {
@@ -114,6 +114,40 @@ const HomeScreen = () => {
     return () => unsubscribe();
   }, []);
   
+  const toggleCheck = (taskId, checked) => {
+    if (user) {
+      const userRef = db.collection('users').doc(user.uid);
+      userRef
+        .collection('Tasks')
+        .doc(taskId)
+        .update({
+          checked: !checked,
+        })
+        .then(() => {
+          console.log('Task updated successfully');
+        })
+        .catch((error) => {
+          console.log('Error updating task:', error);
+        });
+    }
+  };
+
+  const deleteTodo = (taskId) => {
+    if (user) {
+      const userRef = db.collection('users').doc(user.uid);
+      userRef
+        .collection('Tasks')
+        .doc(taskId)
+        .delete()
+        .then(() => {
+          console.log('Task deleted successfully');
+        })
+        .catch((error) => {
+          console.log('Error deleting task:', error);
+        });
+    }
+  };
+
   const enableKeepAwake = async () => {
     await activateKeepAwakeAsync();
   }
@@ -199,28 +233,52 @@ const HomeScreen = () => {
       <Text style={styles.header}>Today's To-Do List</Text>
 
       <ScrollView style={styles.todo}>
-      {tasks.filter((task) => !task.checked).length === 0 ? ( // Check if there are any unchecked tasks
+        {tasks.filter((task) => !task.checked).length === 0 ? (
           <Text style={styles.noTasksText}>No tasks today!</Text>
         ) : (
           tasks
-            .filter((task) => !task.checked) // Filter out the checked tasks
-            .map((task, index) => (
-              <Card key={task.id} style={index !== 0 && styles.taskGap}>
+            .filter((task) => !task.checked)
+            .map((task) => (
+              <Card key={task.id} style={styles.taskCard}>
                 <Card.Content>
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Text>{task.text}</Text>
-          </View>
-        </Card.Content>
-      </Card>
-    ))
-  )}
-  </ScrollView>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          toggleCheck(task.id, task.checked);
+                        }}
+                      >
+                        <Icon
+                          name={
+                            task.checked
+                              ? 'check-box'
+                              : 'check-box-outline-blank'
+                          }
+                          size={24}
+                          color={task.checked ? 'green' : '#800080'}
+                        />
+                      </TouchableOpacity>
+                      <Text style={{ marginLeft: 8 }}>{task.text}</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        deleteTodo(task.id);
+                      }}
+                    >
+                      <Icon name="delete" size={24} color="#800080" />
+                    </TouchableOpacity>
+                  </View>
+                </Card.Content>
+              </Card>
+            ))
+        )}
+      </ScrollView>
 
         <TouchableOpacity 
           style={styles.addbutton}
@@ -338,8 +396,13 @@ const HomeScreen = () => {
       fontSize: 20,
       marginBottom: 10,
     },
-
     taskGap: {
       marginTop: 10,
+    },
+    taskCard: {
+      marginBottom: 10,
+      padding: 2,
+      backgroundColor: '#F0F0F0',
+      borderRadius: 10,
     },
   })

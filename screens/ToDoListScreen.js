@@ -183,7 +183,7 @@ const TodoListScreen = () => {
 
   const renderTodoList = () => {
     const groupedTasks = {};
-
+  
     todoList.forEach((task) => {
       if (!groupedTasks[task.date]) {
         groupedTasks[task.date] = [task];
@@ -191,12 +191,25 @@ const TodoListScreen = () => {
         groupedTasks[task.date].push(task);
       }
     });
-
-    return Object.entries(groupedTasks).map(([date, tasks]) =>
-      renderTaskGroup(tasks, date)
+  
+    const sortedGroupedTasks = Object.entries(groupedTasks).sort(
+      (a, b) => {
+        const dateA = new Date(
+          a[0].split('/').reverse().join('-')
+        );
+        const dateB = new Date(
+          b[0].split('/').reverse().join('-')
+        );
+        return dateB - dateA;
+      }
     );
+  
+    return sortedGroupedTasks
+      .reverse() // Reverse the order of task groups
+      .map(([date, tasks]) => renderTaskGroup(tasks, date));
   };
-
+  
+  
   const handleTodayPress = () => {
     setTodaySelected(true);
     setSelectedDate('Select Date'); 
